@@ -10,3 +10,4 @@ cd module
 ./runWirelessTests.sh
 cd ..
 
+# test git
