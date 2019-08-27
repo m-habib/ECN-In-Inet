@@ -158,6 +158,14 @@ void TCP::handleMessage(cMessage *msg)
             srcAddr = controlInfo->getSourceAddress();
             destAddr = controlInfo->getDestinationAddress();
             //interfaceId = controlInfo->getInterfaceId();
+
+            //TODO: mona
+            int CE = controlInfo->getExplicitCongestionNotification();
+            ASSERT(CE != -1);
+            EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n Got ECN Indication: ECN field = ";
+            EV_INFO << CE << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+            //mona
+
             delete ctrl;
 
             // process segment
