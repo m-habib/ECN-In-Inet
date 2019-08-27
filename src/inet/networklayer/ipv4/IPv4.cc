@@ -127,8 +127,12 @@ void IPv4::handleMessage(cMessage *msg)
     }
     else if (!msg->isSelfMessage() && msg->getArrivalGate()->isName("arpIn"))
         endService(PK(msg));
-    else
+    else{
+//        if(queue.length() > 5){
+//            EV_INFO << "\n\n\n\nKOOOOOOOOOOS EMOOOOOOOOO\n\n\n\n";
+//        }
         QueueBase::handleMessage(msg);
+    }
 }
 
 void IPv4::endService(cPacket *packet)
@@ -186,6 +190,21 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
 
     // hop counter decrement
     datagram->setTimeToLive(datagram->getTimeToLive() - 1);
+
+    if(datagram->getExplicitCongestionNotification() == 3)
+        EV_INFO << "\n\n\n\n*******\n\n\n\n Packet with CE (ECN field == 3).\n\n\n\n*******\n\n\n\n";
+
+
+    //TODO: mona
+    if(queue.length() > 5){
+        EV_INFO << "\n\n\n\n*******\n\n\n\n Queue Size > 5 ";
+        EV_INFO << "\n    set CE.\n\n\n\n*******\n\n\n\n";
+        datagram->setExplicitCongestionNotification(3);
+//        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
+//            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
+//            datagram->setExplicitCongestionNotification(3);
+//        }
+    }
 
     EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
 
@@ -656,6 +675,9 @@ cPacket *IPv4::decapsulate(IPv4Datagram *datagram)
     controlInfo->setTypeOfService(datagram->getTypeOfService());
     controlInfo->setInterfaceId(fromIE ? fromIE->getInterfaceId() : -1);
     controlInfo->setTimeToLive(datagram->getTimeToLive());
+    int EcnValue = datagram->getExplicitCongestionNotification();//mona
+    controlInfo->setExplicitCongestionNotification(EcnValue);//mona
+//    controlInfo->setExplicitCongestionNotification(datagram->getExplicitCongestionNotification());//mona
 
     // original IPv4 datagram might be needed in upper layers to send back ICMP error message
     controlInfo->setOrigDatagram(datagram);
