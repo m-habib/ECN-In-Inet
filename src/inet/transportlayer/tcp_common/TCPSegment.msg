@@ -223,13 +223,15 @@ packet TCPSegment
     // if header options are used the headerLength is greater than 20 bytes (default)
     unsigned short headerLength = TCP_HEADER_OCTETS; // TCP_HEADER_OCTETS = 20
 
+    bool cwrBit; // CWR: congistion window reduced bit - mona
+    bool eceBit; // ECE: ECN-Echo bit - mona
     bool urgBit; // URG: urgent pointer field significant if set
     bool ackBit; // ACK: ackNo significant if set
     bool pshBit; // PSH: push function
     bool rstBit; // RST: reset the connection
     bool synBit; // SYN: synchronize seq. numbers
     bool finBit; // FIN: finish - no more data from sender
-
+	
     // Window Size: the number of data octets beginning with the one indicated
     // in the acknowledgement field which the sender of this segment is
     // willing to accept

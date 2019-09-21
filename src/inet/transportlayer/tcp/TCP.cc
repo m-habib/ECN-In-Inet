@@ -132,12 +132,12 @@ void TCP::handleMessage(cMessage *msg)
     }
     else if (msg->arrivedOn("ipIn")) {
         if (false
-#ifdef WITH_IPv4
+            #ifdef WITH_IPv4
             || dynamic_cast<ICMPMessage *>(msg)
-#endif // ifdef WITH_IPv4
-#ifdef WITH_IPv6
+            #endif // ifdef WITH_IPv4
+            #ifdef WITH_IPv6
             || dynamic_cast<ICMPv6Message *>(msg)
-#endif // ifdef WITH_IPv6
+        #endif // ifdef WITH_IPv6
             )
         {
             EV_DETAIL << "ICMP error received -- discarding\n";    // FIXME can ICMP packets really make it up to TCP???
@@ -158,19 +158,27 @@ void TCP::handleMessage(cMessage *msg)
             srcAddr = controlInfo->getSourceAddress();
             destAddr = controlInfo->getDestinationAddress();
             //interfaceId = controlInfo->getInterfaceId();
-
-            //TODO: mona
             int CE = controlInfo->getExplicitCongestionNotification();
-            ASSERT(CE != -1);
-            EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n Got ECN Indication: ECN field = ";
-            EV_INFO << CE << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-            //mona
+
 
             delete ctrl;
 
             // process segment
             TCPConnection *conn = findConnForSegment(tcpseg, srcAddr, destAddr);
             if (conn) {
+                //mona
+                ASSERT(CE != -1);
+                if(CE == 3){
+                    EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom IP up to TCP: Got ECN Indication: ECN field = " << CE;
+                    TCPStateVariables* state = conn->getState();
+                    if(state){  //TODO: check if not in initialize?
+                        state->ecn_echo = true;
+                        EV_INFO << "\n    setting ecn_echo state to on.";
+                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+                    }
+                }
+                //mona
+
                 bool ret = conn->processTCPSegment(tcpseg, srcAddr, destAddr);
                 if (!ret)
                     removeConnection(conn);
@@ -199,6 +207,19 @@ void TCP::handleMessage(cMessage *msg)
 
             EV_INFO << "TCP connection created for " << msg << "\n";
         }
+
+        TCPStateVariables* state = conn->getState();
+        if(state){      //TODO: check if not in initialize?
+            if(conn->getState()->ecn_echo == true){
+                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom APP down to TCP: ecn_echo is true";
+                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+                //TODO: set ECE in tcp header
+            }else{
+                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom APP down to TCP: ecn_echo is false";
+                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+            }
+        }
+
         bool ret = conn->processAppCommand(msg);
         if (!ret)
             removeConnection(conn);

@@ -263,6 +263,11 @@ class INET_API TCPStateVariables : public cObject
     uint32 usedRcvBuffer;    // current amount of used bytes in tcp receive queue
     uint32 freeRcvBuffer;    // current amount of free bytes in tcp receive queue
     uint32 tcpRcvQueueDrops;    // number of drops in tcp receive queue
+
+    //mona
+    bool ecn_echo;  //indicates if connection is in echo mode (got CE indication from IP and didn't get CWR from sender yet)
+    //mona
+
 };
 
 /**

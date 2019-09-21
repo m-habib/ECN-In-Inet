@@ -548,7 +548,22 @@ void TCPConnection::sendAck()
     tcpseg->setSequenceNo(state->snd_nxt);
     tcpseg->setAckNo(state->rcv_nxt);
     tcpseg->setWindow(updateRcvWnd());
-
+    //mona
+    TCPStateVariables* state = getState();
+    if(state){  //TODO: check if not in initialize?
+       if (state->ecn_echo == true){
+           tcpseg->setEceBit(true);
+           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+           EV_INFO << "in sendAck: found ecn_echo == true => set EceBit in header";
+           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+       }else{
+           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+           EV_INFO << "in sendAck: found ecn_echo == false => keeping EceBit without change";
+           EV_INFO << "\n       prev value == " << tcpseg->getEceBit();
+           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+       }
+    }
+    //mona
     // write header options
     writeHeaderOptions(tcpseg);
 
