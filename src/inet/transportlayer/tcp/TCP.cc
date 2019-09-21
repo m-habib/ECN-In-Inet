@@ -177,6 +177,16 @@ void TCP::handleMessage(cMessage *msg)
                         EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
                     }
                 }
+
+                //TODO: delete this section later.
+                TCPStateVariables* state = conn->getState();
+                if(state){  //TODO: check if not in initialize?
+                    if(state->ecn_cwr == true){
+                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+                        EV_INFO << "\n    got packet with ecn_cwr == true.";
+                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+                    }
+                }
                 //mona
 
                 bool ret = conn->processTCPSegment(tcpseg, srcAddr, destAddr);

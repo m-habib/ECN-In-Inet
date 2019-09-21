@@ -729,6 +729,25 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
         event = TCP_E_CLOSE;
     }
 
+    //TODO: mona: not sure if here or above
+    if (tcpseg->getEceBit() == true){
+        //TODO: CWR...
+        TCPStateVariables* state = getState();
+        if(state){  //TODO: check if not in initialize?
+            state->ecn_cwr = true;
+            EV_INFO << "\n    setting ecn_echo state to on.";
+            EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+        }
+        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+        EV_INFO << "got a packet in TCP with ECE on";
+        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+    }else{
+        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+        EV_INFO << "got a packet in TCP with ECE off";
+        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+    }
+    //mona
+
     return event;
 }
 
