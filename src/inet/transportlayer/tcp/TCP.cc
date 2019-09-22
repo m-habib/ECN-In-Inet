@@ -166,26 +166,22 @@ void TCP::handleMessage(cMessage *msg)
             // process segment
             TCPConnection *conn = findConnForSegment(tcpseg, srcAddr, destAddr);
             if (conn) {
-                //mona
+                //mona TODO: move to processSegment1stThru8th() ?
                 ASSERT(CE != -1);
-                if(CE == 3){
-                    EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom IP up to TCP: Got ECN Indication: ECN field = " << CE;
-                    TCPStateVariables* state = conn->getState();
+                TCPStateVariables* state = conn->getState();
+                if(CE == 3){    //TODO: check only if receiver
+                    EV_INFO << "\n\n\nmona\nReceiver:\n  Got ECN Indication: ECN field = " << CE;
                     if(state){  //TODO: check if not in initialize?
                         state->ecn_echo = true;
-                        EV_INFO << "\n    setting ecn_echo state to on.";
-                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+                        EV_INFO << "\n  setting ecn_echo state to on.";
                     }
+                    EV_INFO << "\n\n\n";
                 }
 
-                //TODO: delete this section later.
-                TCPStateVariables* state = conn->getState();
-                if(state){  //TODO: check if not in initialize?
-                    if(state->ecn_cwr == true){
-                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-                        EV_INFO << "\n    got packet with ecn_cwr == true.";
-                        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-                    }
+                //TODO: check if congestion window reduced
+                if(tcpseg->getCwrBit() == true){
+                    EV_INFO << "\n\n\nmona\nReceiver:\n  Got CWR... Existing ecn_echo mode\n\n\n" << CE;
+                    state->ecn_echo = false;
                 }
                 //mona
 
@@ -218,17 +214,12 @@ void TCP::handleMessage(cMessage *msg)
             EV_INFO << "TCP connection created for " << msg << "\n";
         }
 
+        //mona
         TCPStateVariables* state = conn->getState();
         if(state){      //TODO: check if not in initialize?
-            if(conn->getState()->ecn_echo == true){
-                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom APP down to TCP: ecn_echo is true";
-                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-                //TODO: set ECE in tcp header
-            }else{
-                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\nfrom APP down to TCP: ecn_echo is false";
-                EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-            }
+            //TODO: Sender Code
         }
+        //mona
 
         bool ret = conn->processAppCommand(msg);
         if (!ret)

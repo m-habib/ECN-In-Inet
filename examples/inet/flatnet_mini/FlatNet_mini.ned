@@ -19,7 +19,6 @@
 
 
 
-
 package inet.examples.inet.flatnet_mini;
 
 import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
@@ -44,13 +43,17 @@ network FlatNet_mini
     submodules:
         configurator: IPv4NetworkConfigurator {
             parameters:
-                config = xml("<config><interface hosts='*' address='192.168.x.x' netmask='255.255.x.x'/></config>");
+                
+                config = xml("<config> \
+                				<interface hosts='cli1' address='192.168.0.37' netmask='255.255.x.x'/> \
+                                <interface hosts='*' address='192.168.x.x' netmask='255.255.x.x'/> \
+                                </config>");
         }
-        rte[5]: Router {
+        rte[2]: Router {
             parameters:
                 @display("is=vs");
         }
-        cli[1]: StandardHost {
+        cli1: StandardHost {
             parameters:
                 @display("i=device/laptop_s");
         }
@@ -59,13 +62,60 @@ network FlatNet_mini
                 @display("i=device/server_s");
         }
     connections:
-        cli[0].pppg++ <--> ethernetline <--> rte[0].pppg++;
+        cli1.pppg++ <--> ethernetline <--> rte[0].pppg++;
         rte[0].pppg++ <--> ethernetline <--> rte[1].pppg++;
-        rte[1].pppg++ <--> ethernetline <--> rte[2].pppg++;
-        rte[2].pppg++ <--> ethernetline <--> rte[3].pppg++;
-        rte[3].pppg++ <--> ethernetline <--> rte[4].pppg++;
 //        cli[1].pppg++ <--> ethernetline <--> rte[0].pppg++;
-        srv.pppg++ <--> fiberline <--> rte[4].pppg++;
+        srv.pppg++ <--> fiberline <--> rte[1].pppg++;
 }
+
+
+
+//package inet.examples.inet.flatnet_mini;
+//
+//import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
+//import inet.node.inet.Router;
+//import inet.node.inet.StandardHost;
+//import ned.DatarateChannel;
+//
+//
+//network FlatNet_mini
+//{
+//    types:
+//        channel fiberline extends DatarateChannel
+//        {
+//            delay = 1us;
+//            datarate = 512Mbps;
+//        }
+//        channel ethernetline extends DatarateChannel
+//        {
+//            delay = 0.1us;
+//            datarate = 10Mbps;
+//        }
+//    submodules:
+//        configurator: IPv4NetworkConfigurator {
+//            parameters:
+//                config = xml("<config><interface hosts='*' address='192.168.x.x' netmask='255.255.x.x'/></config>");
+//        }
+//        rte[5]: Router {
+//            parameters:
+//                @display("is=vs");
+//        }
+//        cli[1]: StandardHost {
+//            parameters:
+//                @display("i=device/laptop_s");
+//        }
+//        srv: StandardHost {
+//            parameters:
+//                @display("i=device/server_s");
+//        }
+//    connections:
+//        cli[0].pppg++ <--> ethernetline <--> rte[0].pppg++;
+//        rte[0].pppg++ <--> ethernetline <--> rte[1].pppg++;
+//        rte[1].pppg++ <--> ethernetline <--> rte[2].pppg++;
+//        rte[2].pppg++ <--> ethernetline <--> rte[3].pppg++;
+//        rte[3].pppg++ <--> ethernetline <--> rte[4].pppg++;
+////        cli[1].pppg++ <--> ethernetline <--> rte[0].pppg++;
+//        srv.pppg++ <--> fiberline <--> rte[4].pppg++;
+//}
 
 

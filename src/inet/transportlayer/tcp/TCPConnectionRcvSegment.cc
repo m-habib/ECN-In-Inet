@@ -195,6 +195,34 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
         return TCP_E_IGNORE;
     }
 
+
+
+    //TODO: mona: not sure if here or above/below
+    static int ece_counter = 0; //TODO: temp variable for development purposes
+    if (tcpseg->getEceBit() == true){
+        //TODO: CWR...
+        TCPStateVariables* state = getState();
+        if(state){  //TODO: check if not in initialize?
+            state->ecn_cwr = true;
+            EV_INFO << "\n\n\nmona\nSender:\n  got packet with ECE on, ece_counter = " << ece_counter;
+            if(ece_counter++ > 4){
+                ",  Entering CWR mode.";
+            }
+            EV_INFO << "\n\n\n";
+        }
+        EV_INFO << "\n\n\nmona\nSender:\n  got packet with ECE on and NULL state";
+        EV_INFO << "\n\n\n";
+    }else{
+        EV_INFO << "\n\n\nmona\nSender:\n";
+        EV_INFO << "  got packet with ECE off";
+        state->ecn_cwr = false; //TODO: not sure, I think that we should set to false when sending cwr...?
+        EV_INFO << "\n\n\n";
+    }
+    //mona
+
+
+
+
     //
     // RFC 793: second check the RST bit,
     //
@@ -729,24 +757,6 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
         event = TCP_E_CLOSE;
     }
 
-    //TODO: mona: not sure if here or above
-    if (tcpseg->getEceBit() == true){
-        //TODO: CWR...
-        TCPStateVariables* state = getState();
-        if(state){  //TODO: check if not in initialize?
-            state->ecn_cwr = true;
-            EV_INFO << "\n    setting ecn_echo state to on.";
-            EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-        }
-        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-        EV_INFO << "got a packet in TCP with ECE on";
-        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-    }else{
-        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-        EV_INFO << "got a packet in TCP with ECE off";
-        EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-    }
-    //mona
 
     return event;
 }

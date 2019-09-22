@@ -553,14 +553,14 @@ void TCPConnection::sendAck()
     if(state){  //TODO: check if not in initialize?
        if (state->ecn_echo == true){
            tcpseg->setEceBit(true);
-           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-           EV_INFO << "in sendAck: found ecn_echo == true => set EceBit in header";
-           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+           EV_INFO << "\n\n\nmona\nReceiver: \n";
+           EV_INFO << "  in sendAck: found ecn_echo == true => set EceBit in TCP header";
+           EV_INFO << "\n\n\n";
        }else{
-           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
-           EV_INFO << "in sendAck: found ecn_echo == false => keeping EceBit without change";
-           EV_INFO << "\n       prev value == " << tcpseg->getEceBit();
-           EV_INFO << "\n\n\n\n*\n*\n*\n*\n*\n*\n*\n\n\n\n";
+           EV_INFO << "\n\n\nmona\nReceiver: \n";
+           EV_INFO << "  in sendAck: found ecn_echo == false => keeping EceBit without change";
+           EV_INFO << "\n    prev value == " << tcpseg->getEceBit();
+           EV_INFO << "\n\n\n";
        }
     }
     //mona
@@ -637,6 +637,11 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setAckNo(state->rcv_nxt);
     tcpseg->setAckBit(true);
     tcpseg->setWindow(updateRcvWnd());
+
+    //mona
+    if(state->ecn_cwr)
+        tcpseg->setCwrBit(true);
+    //mona
 
     // TBD when to set PSH bit?
     // TBD set URG bit if needed

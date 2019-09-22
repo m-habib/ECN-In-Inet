@@ -191,20 +191,29 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
     // hop counter decrement
     datagram->setTimeToLive(datagram->getTimeToLive() - 1);
 
-    if(datagram->getExplicitCongestionNotification() == 3)
-        EV_INFO << "\n\n\n\n*******\n\n\n\n Packet with CE (ECN field == 3).\n\n\n\n*******\n\n\n\n";
+//    if(datagram->getExplicitCongestionNotification() == 3)
+//        EV_INFO << "\n\n\n\n*******\n\n\n\n Packet with CE (ECN field == 3).\n\n\n\n*******\n\n\n\n";
 
 
     //TODO: mona
-    if(queue.length() > 5){
-        EV_INFO << "\n\n\n\n*******\n\n\n\n Queue Size > 5 ";
-        EV_INFO << "\n    set CE.\n\n\n\n*******\n\n\n\n";
-        datagram->setExplicitCongestionNotification(3);
-//        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
-//            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
-//            datagram->setExplicitCongestionNotification(3);
-//        }
+//    std::string client_addr_s = "192.168.0.37";
+//    char client_addr[client_addr_s.length()+1];
+//    strcpy(client_addr, client_addr_s);
+    if(datagram->getSourceAddress() == IPv4Address(192, 168, 0, 37)){  //only turn on CE when messages are from Client to Server (delete later)
+        datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
+        EV_INFO << "\n\n\nmona\n packet from 192.168.0.37, Set CE\n\n\n";
+    }else{
+        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
     }
+//    if(queue.length() > 5){
+//        EV_INFO << "\n\n\n\n*******\n\n\n\n Queue Size > 5 ";
+//        EV_INFO << "\n    set CE.\n\n\n\n*******\n\n\n\n";
+//        datagram->setExplicitCongestionNotification(3);
+////        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
+////            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
+////            datagram->setExplicitCongestionNotification(3);
+////        }
+//    }
 
     EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
 
