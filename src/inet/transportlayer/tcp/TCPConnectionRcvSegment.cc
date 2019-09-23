@@ -203,20 +203,19 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
         //TODO: CWR...
         TCPStateVariables* state = getState();
         if(state){  //TODO: check if not in initialize?
-            state->ecn_cwr = true;
-            EV_INFO << "\n\n\nmona\nSender:\n  got packet with ECE on, ece_counter = " << ece_counter;
-            if(ece_counter++ > 4){
-                ",  Entering CWR mode.";
+            if(ece_counter++ <= 5)
+                EV_INFO << "\n\nmona\nSender:\n  got packet with ECE, ece_counter = " << ece_counter;
+            if(ece_counter == 5){
+                EV_INFO << "\n,  Entering CWR mode.";
+                state->ecn_cwr = true;
             }
-            EV_INFO << "\n\n\n";
+            EV_INFO << "\n\n";
         }
-        EV_INFO << "\n\n\nmona\nSender:\n  got packet with ECE on and NULL state";
-        EV_INFO << "\n\n\n";
     }else{
-        EV_INFO << "\n\n\nmona\nSender:\n";
-        EV_INFO << "  got packet with ECE off";
-        state->ecn_cwr = false; //TODO: not sure, I think that we should set to false when sending cwr...?
-        EV_INFO << "\n\n\n";
+//        EV_INFO << "\n\n\nmona\nSender:\n";
+//        EV_INFO << "  got packet with ECE off";
+//        state->ecn_cwr = false; //TODO: not sure, I think that we should set to false when sending cwr...?
+//        EV_INFO << "\n\n\n";
     }
     //mona
 

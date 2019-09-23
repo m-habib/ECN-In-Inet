@@ -554,13 +554,13 @@ void TCPConnection::sendAck()
        if (state->ecn_echo == true){
            tcpseg->setEceBit(true);
            EV_INFO << "\n\n\nmona\nReceiver: \n";
-           EV_INFO << "  in sendAck: found ecn_echo == true => set EceBit in TCP header";
-           EV_INFO << "\n\n\n";
+           EV_INFO << "  Sending ACK: in ecn_echo mode => set EceBit in TCP header";
+           EV_INFO << "\n\n";
        }else{
-           EV_INFO << "\n\n\nmona\nReceiver: \n";
-           EV_INFO << "  in sendAck: found ecn_echo == false => keeping EceBit without change";
-           EV_INFO << "\n    prev value == " << tcpseg->getEceBit();
-           EV_INFO << "\n\n\n";
+//           EV_INFO << "\n\n\nmona\nReceiver: \n";
+//           EV_INFO << "  in sendAck: not in ecn_echo mode => keeping EceBit without change";
+//           EV_INFO << "\n    prev value == " << tcpseg->getEceBit();
+//           EV_INFO << "\n\n\n";
        }
     }
     //mona
@@ -639,8 +639,12 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setWindow(updateRcvWnd());
 
     //mona
-    if(state->ecn_cwr)
+    if(state->ecn_cwr){
+        //TODO: enter congestion avoidance... CWND/=2...
         tcpseg->setCwrBit(true);
+        EV_INFO << "\n\nmona\nSender:\n set CWR bit in header and exit cwr_mode\n\n";
+        state->ecn_cwr = false;
+    }
     //mona
 
     // TBD when to set PSH bit?

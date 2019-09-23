@@ -170,17 +170,17 @@ void TCP::handleMessage(cMessage *msg)
                 ASSERT(CE != -1);
                 TCPStateVariables* state = conn->getState();
                 if(CE == 3){    //TODO: check only if receiver
-                    EV_INFO << "\n\n\nmona\nReceiver:\n  Got ECN Indication: ECN field = " << CE;
+                    EV_INFO << "\n\nmona\nReceiver:\n  Got ECN Indication: ECN field = " << CE;
                     if(state){  //TODO: check if not in initialize?
                         state->ecn_echo = true;
-                        EV_INFO << "\n  setting ecn_echo state to on.";
+                        EV_INFO << "\n  Entering ecn_echo mode.";
                     }
-                    EV_INFO << "\n\n\n";
+                    EV_INFO << "\n\n";
                 }
 
                 //TODO: check if congestion window reduced
                 if(tcpseg->getCwrBit() == true){
-                    EV_INFO << "\n\n\nmona\nReceiver:\n  Got CWR... Existing ecn_echo mode\n\n\n" << CE;
+                    EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecn_echo mode\n\n" << CE;
                     state->ecn_echo = false;
                 }
                 //mona

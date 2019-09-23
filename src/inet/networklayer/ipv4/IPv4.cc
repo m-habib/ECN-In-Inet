@@ -200,10 +200,15 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
 //    char client_addr[client_addr_s.length()+1];
 //    strcpy(client_addr, client_addr_s);
     if(datagram->getSourceAddress() == IPv4Address(192, 168, 0, 37)){  //only turn on CE when messages are from Client to Server (delete later)
-        datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
-        EV_INFO << "\n\n\nmona\n packet from 192.168.0.37, Set CE\n\n\n";
+        static int counter = 1;
+        if(counter++ <= 8)
+            EV_INFO << "\n\nmona\ncounter is " << counter;
+        if(counter == 8){
+            EV_INFO << "\nSet CE (packet from 192.168.0.37)\n\n";
+            datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
+        }
     }else{
-        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
+//        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
     }
 //    if(queue.length() > 5){
 //        EV_INFO << "\n\n\n\n*******\n\n\n\n Queue Size > 5 ";

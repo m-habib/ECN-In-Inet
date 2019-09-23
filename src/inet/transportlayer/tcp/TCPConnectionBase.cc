@@ -117,6 +117,9 @@ TCPStateVariables::TCPStateVariables()
     tcpRcvQueueDrops = 0;
     sendQueueLimit = 0;
     queueUpdate = true;
+
+    ecn_cwr = false; //mona
+    ecn_echo = false; //mona
 }
 
 std::string TCPStateVariables::str() const
