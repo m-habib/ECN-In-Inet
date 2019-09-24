@@ -266,8 +266,9 @@ class INET_API TCPStateVariables : public cObject
 
     //mona
     bool ecn_echo;  //indicates if connection is in echo mode (got CE indication from IP and didn't get CWR from sender yet)
-    bool ecn_cwr;   //mona: TODO: only to test putting sender in packet loss mode. delete later and work with existing states or
-                    // with new (create your own) appropriate states.
+    bool sndCwr;    //set if ECE was handled
+    bool gotEce;    //set if packet with ECE arrived
+    simtime_t eceReactionTime; //records the time of the last ECE reaction
     //mona
 
 };

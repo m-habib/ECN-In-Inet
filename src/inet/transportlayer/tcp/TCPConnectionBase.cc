@@ -118,7 +118,7 @@ TCPStateVariables::TCPStateVariables()
     sendQueueLimit = 0;
     queueUpdate = true;
 
-    ecn_cwr = false; //mona
+    sndCwr = false; //mona
     ecn_echo = false; //mona
 }
 

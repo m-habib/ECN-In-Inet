@@ -639,11 +639,11 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setWindow(updateRcvWnd());
 
     //mona
-    if(state->ecn_cwr){
+    if(state->sndCwr){
         //TODO: enter congestion avoidance... CWND/=2...
         tcpseg->setCwrBit(true);
-        EV_INFO << "\n\nmona\nSender:\n set CWR bit in header and exit cwr_mode\n\n";
-        state->ecn_cwr = false;
+        EV_INFO << "\n\nmona\nSender:\n set CWR bit in header.\n\n";
+        state->sndCwr = false;
     }
     //mona
 

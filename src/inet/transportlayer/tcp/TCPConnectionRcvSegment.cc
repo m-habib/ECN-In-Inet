@@ -206,8 +206,8 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
             if(ece_counter++ <= 5)
                 EV_INFO << "\n\nmona\nSender:\n  got packet with ECE, ece_counter = " << ece_counter;
             if(ece_counter == 5){
-                EV_INFO << "\n,  Entering CWR mode.";
-                state->ecn_cwr = true;
+                EV_INFO << "\n, gotEce <- true";
+                state->gotEce = true;
             }
             EV_INFO << "\n\n";
         }

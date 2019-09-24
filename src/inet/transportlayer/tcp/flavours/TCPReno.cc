@@ -103,6 +103,47 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
             cwndVector->record(state->snd_cwnd);
     }
     else {
+
+        //mona
+        //TODO: not sure if here is the correct location. what about dupacks > DUPTHRESH? do we need if else statement?
+        if (state->gotEce){
+            // halve cwnd and reduce ssthresh and do not increase cwnd (RFC 3168 page 18):
+            // If the sender receives an ECN-Echo (ECE) ACK
+            // packet (that is, an ACK packet with the ECN-Echo flag set in the TCP
+            // header), then the sender knows that congestion was encountered in the
+            // network on the path from the sender to the receiver.  The indication
+            // of congestion should be treated just as a congestion loss in non-
+            // ECN-Capable TCP. That is, the TCP source halves the congestion window
+            // "cwnd" and reduces the slow start threshold "ssthresh".  The sending
+            // TCP SHOULD NOT increase the congestion window in response to the
+            // receipt of an ECN-Echo ACK packet ...
+            // ...
+            // ... the value of the congestion window is bounded below by a value of one MSS.
+
+            if(simTime() - state->eceReactionTime > state->srtt){    //TODO: is state->srtt unique for each connection??
+                                                                     //TODO: can I compare rtt vs srtt?
+                state->ssthresh = state->snd_cwnd / 2; //according to wikipedia TODO: check if ok.
+                state->snd_cwnd = std::max(state->snd_cwnd / 2, 1);
+                state->sndCwr = true;
+                state->gotEce = false;
+                EV_INFO << "\n\nmona: ssthresh = cwnd/2: received ECN-Echo ACK.\n\n";
+                EV_INFO << "\n\nmona: cwnd /= 2: received ECN-Echo ACK.\n\n";
+
+                // RFC 3168 page 18:
+                // ... the sending TCP MUST reset the retransmit timer on receiving
+                // the ECN-Echo packet when the congestion window is one ...
+                if(state->snd_cwnd == 1){
+                    restartRexmitTimer();   //TODO: not sure if this is the retransmit timer. check that.
+                    EV_INFO << "\n\nmona: cwnd = 1 ... reset retransmit timer.\n\n";
+                }
+
+                state->eceReactionTime = simTime();
+            }else{
+                EV_INFO << "\n\nmona: multiple ECN-Echo ACKs in less than rtt ... no reaction\n\n";
+            }
+        }
+        //mona
+
         //
         // Perform slow start and congestion avoidance.
         //
@@ -111,7 +152,7 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
 
             // perform Slow Start. RFC 2581: "During slow start, a TCP increments cwnd
             // by at most SMSS bytes for each ACK received that acknowledges new data."
-            state->snd_cwnd += state->snd_mss;
+            state->snd_cwnd += state->snd_mss;  //mona: TODO: do not inc cwnd if got ECE
 
             // Note: we could increase cwnd based on the number of bytes being
             // acknowledged by each arriving ACK, rather than by the number of ACKs
