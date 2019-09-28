@@ -120,6 +120,8 @@ TCPStateVariables::TCPStateVariables()
 
     sndCwr = false; //mona
     ecn_echo = false; //mona
+    gotEce = false; //mona
+    eceReactionTime = 0; //mona
 }
 
 std::string TCPStateVariables::str() const

@@ -103,7 +103,6 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
             cwndVector->record(state->snd_cwnd);
     }
     else {
-
         //mona
         //TODO: not sure if here is the correct location. what about dupacks > DUPTHRESH? do we need if else statement?
         if (state->gotEce){
@@ -123,9 +122,8 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
             if(simTime() - state->eceReactionTime > state->srtt){    //TODO: is state->srtt unique for each connection??
                                                                      //TODO: can I compare rtt vs srtt?
                 state->ssthresh = state->snd_cwnd / 2; //according to wikipedia TODO: check if ok.
-                state->snd_cwnd = std::max(state->snd_cwnd / 2, 1);
+                state->snd_cwnd = std::max(state->snd_cwnd / 2, uint32(1));
                 state->sndCwr = true;
-                state->gotEce = false;
                 EV_INFO << "\n\nmona: ssthresh = cwnd/2: received ECN-Echo ACK.\n\n";
                 EV_INFO << "\n\nmona: cwnd /= 2: received ECN-Echo ACK.\n\n";
 
@@ -136,64 +134,63 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
                     restartRexmitTimer();   //TODO: not sure if this is the retransmit timer. check that.
                     EV_INFO << "\n\nmona: cwnd = 1 ... reset retransmit timer.\n\n";
                 }
-
                 state->eceReactionTime = simTime();
             }else{
                 EV_INFO << "\n\nmona: multiple ECN-Echo ACKs in less than rtt ... no reaction\n\n";
             }
-        }
+            state->gotEce = false;
+        }else{
         //mona
-
-        //
-        // Perform slow start and congestion avoidance.
-        //
-        if (state->snd_cwnd < state->ssthresh) {
-            EV_INFO << "cwnd <= ssthresh: Slow Start: increasing cwnd by one SMSS bytes to ";
-
-            // perform Slow Start. RFC 2581: "During slow start, a TCP increments cwnd
-            // by at most SMSS bytes for each ACK received that acknowledges new data."
-            state->snd_cwnd += state->snd_mss;  //mona: TODO: do not inc cwnd if got ECE
-
-            // Note: we could increase cwnd based on the number of bytes being
-            // acknowledged by each arriving ACK, rather than by the number of ACKs
-            // that arrive. This is called "Appropriate Byte Counting" (ABC) and is
-            // described in RFC 3465. This RFC is experimental and probably not
-            // implemented in real-life TCPs, hence it's commented out. Also, the ABC
-            // RFC would require other modifications as well in addition to the
-            // two lines below.
             //
-            // int bytesAcked = state->snd_una - firstSeqAcked;
-            // state->snd_cwnd += bytesAcked * state->snd_mss;
-
-            if (cwndVector)
-                cwndVector->record(state->snd_cwnd);
-
-            EV_INFO << "cwnd=" << state->snd_cwnd << "\n";
-        }
-        else {
-            // perform Congestion Avoidance (RFC 2581)
-            uint32 incr = state->snd_mss * state->snd_mss / state->snd_cwnd;
-
-            if (incr == 0)
-                incr = 1;
-
-            state->snd_cwnd += incr;
-
-            if (cwndVector)
-                cwndVector->record(state->snd_cwnd);
-
+            // Perform slow start and congestion avoidance.
             //
-            // Note: some implementations use extra additive constant mss / 8 here
-            // which is known to be incorrect (RFC 2581 p5)
-            //
-            // Note 2: RFC 3465 (experimental) "Appropriate Byte Counting" (ABC)
-            // would require maintaining a bytes_acked variable here which we don't do
-            //
+            if (state->snd_cwnd < state->ssthresh) {
+                EV_INFO << "cwnd <= ssthresh: Slow Start: increasing cwnd by one SMSS bytes to ";
 
-            EV_INFO << "cwnd > ssthresh: Congestion Avoidance: increasing cwnd linearly, to " << state->snd_cwnd << "\n";
-        }
+                // perform Slow Start. RFC 2581: "During slow start, a TCP increments cwnd
+                // by at most SMSS bytes for each ACK received that acknowledges new data."
+                state->snd_cwnd += state->snd_mss;  //mona: TODO: do not inc cwnd if got ECE
+
+                // Note: we could increase cwnd based on the number of bytes being
+                // acknowledged by each arriving ACK, rather than by the number of ACKs
+                // that arrive. This is called "Appropriate Byte Counting" (ABC) and is
+                // described in RFC 3465. This RFC is experimental and probably not
+                // implemented in real-life TCPs, hence it's commented out. Also, the ABC
+                // RFC would require other modifications as well in addition to the
+                // two lines below.
+                //
+                // int bytesAcked = state->snd_una - firstSeqAcked;
+                // state->snd_cwnd += bytesAcked * state->snd_mss;
+
+                if (cwndVector)
+                    cwndVector->record(state->snd_cwnd);
+
+                EV_INFO << "cwnd=" << state->snd_cwnd << "\n";
+            }
+            else {
+                // perform Congestion Avoidance (RFC 2581)
+                uint32 incr = state->snd_mss * state->snd_mss / state->snd_cwnd;
+
+                if (incr == 0)
+                    incr = 1;
+
+                state->snd_cwnd += incr;
+
+                if (cwndVector)
+                    cwndVector->record(state->snd_cwnd);
+
+                //
+                // Note: some implementations use extra additive constant mss / 8 here
+                // which is known to be incorrect (RFC 2581 p5)
+                //
+                // Note 2: RFC 3465 (experimental) "Appropriate Byte Counting" (ABC)
+                // would require maintaining a bytes_acked variable here which we don't do
+                //
+
+                EV_INFO << "cwnd > ssthresh: Congestion Avoidance: increasing cwnd linearly, to " << state->snd_cwnd << "\n";
+            }
+        }//mona
     }
-
     if (state->sack_enabled && state->lossRecovery) {
         // RFC 3517, page 7: "Once a TCP is in the loss recovery phase the following procedure MUST
         // be used for each arriving ACK:
