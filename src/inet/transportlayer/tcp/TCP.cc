@@ -169,19 +169,15 @@ void TCP::handleMessage(cMessage *msg)
                 //mona TODO: move to processSegment1stThru8th() ?
                 ASSERT(CE != -1);
                 TCPStateVariables* state = conn->getState();
-                if(CE == 3){    //TODO: check only if receiver
-                    EV_INFO << "\n\nmona\nReceiver:\n  Got ECN Indication: ECN field = " << CE;
-                    if(state){  //TODO: check if not in initialize?
-                        state->ecn_echo = true;
-                        EV_INFO << "\n  Entering ecn_echo mode.";
-                    }
-                    EV_INFO << "\n\n";
+                if(CE == 3){    //TODO: check only in receiver-side (if processing ACK packet)
+                    if(state)  //TODO: check if not in initialize?
+                        state->gotCeIndication = true;
                 }
 
                 //TODO: check if congestion window reduced
                 if(tcpseg->getCwrBit() == true){
-                    EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecn_echo mode\n\n" << CE;
-                    state->ecn_echo = false;
+                    EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecnEchoState\n\n" << CE;
+                    state->ecnEchoState = false;
                 }
                 //mona
 

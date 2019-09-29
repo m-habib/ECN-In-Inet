@@ -47,6 +47,11 @@ cMessage *DropTailQueue::enqueue(cMessage *msg)
         return msg;
     }
     else {
+        //mona
+        //msg->setControlInfo(p)
+        if(queue.getLength() > 7)
+            EV << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMONA: queue.getlength > 7 \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+        //mona
         queue.insert(msg);
         emit(queueLengthSignal, queue.getLength());
         return nullptr;

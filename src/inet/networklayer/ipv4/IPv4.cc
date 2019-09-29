@@ -195,30 +195,28 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
 //        EV_INFO << "\n\n\n\n*******\n\n\n\n Packet with CE (ECN field == 3).\n\n\n\n*******\n\n\n\n";
 
 
-    //TODO: mona
-//    std::string client_addr_s = "192.168.0.37";
-//    char client_addr[client_addr_s.length()+1];
-//    strcpy(client_addr, client_addr_s);
-    if(datagram->getSourceAddress() == IPv4Address(192, 168, 0, 37)){  //only turn on CE when messages are from Client to Server (delete later)
-        static int counter = 1;
-        if(counter++ <= 8)
-            EV_INFO << "\n\nmona\ncounter is " << counter;
-        if(counter == 8){
-            EV_INFO << "\nSet CE (packet from 192.168.0.37)\n\n";
-            datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
-        }
-    }else{
-//        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
-    }
-//    if(queue.length() > 5){
-//        EV_INFO << "\n\n\n\n*******\n\n\n\n Queue Size > 5 ";
-//        EV_INFO << "\n    set CE.\n\n\n\n*******\n\n\n\n";
-//        datagram->setExplicitCongestionNotification(3);
-////        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
-////            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
-////            datagram->setExplicitCongestionNotification(3);
-////        }
+    //mona
+//    if(datagram->getSourceAddress() == IPv4Address(192, 168, 0, 37)){  //only turn on CE when messages are from Client to Server (delete later)
+//        static int counter = 1;
+//        if(counter++ <= 8)
+//            EV_INFO << "\n\nmona\ncounter is " << counter;
+//        if(counter == 8){
+//            EV_INFO << "\nSet CE (packet from 192.168.0.37)\n\n";
+//            datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
+//        }
+//    }else{
+////        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
 //    }
+    if(queue.length() > 5){
+        EV_INFO << "\n\nmona: Queue Size > 5 ";
+        EV_INFO << "\n    set CE.\n\n";
+        datagram->setExplicitCongestionNotification(3);
+//        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
+//            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
+//            datagram->setExplicitCongestionNotification(3);
+//        }
+    }
+//mona
 
     EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
 

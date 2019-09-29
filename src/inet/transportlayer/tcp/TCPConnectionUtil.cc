@@ -551,16 +551,15 @@ void TCPConnection::sendAck()
     //mona
     TCPStateVariables* state = getState();
     if(state){  //TODO: check if not in initialize?
-       if (state->ecn_echo == true){
+       if(state->gotCeIndication){
+           state->ecnEchoState = true;
+           state->gotCeIndication = false;
+           EV << "\n\nmona: receiver got CE, entering echo state\n\n";
+       }
+       if (state->ecnEchoState == true){
            tcpseg->setEceBit(true);
            EV_INFO << "\n\n\nmona\nReceiver: \n";
-           EV_INFO << "  Sending ACK: in ecn_echo mode => set EceBit in TCP header";
-           EV_INFO << "\n\n";
-       }else{
-//           EV_INFO << "\n\n\nmona\nReceiver: \n";
-//           EV_INFO << "  in sendAck: not in ecn_echo mode => keeping EceBit without change";
-//           EV_INFO << "\n    prev value == " << tcpseg->getEceBit();
-//           EV_INFO << "\n\n\n";
+           EV_INFO << "  Sending ACK: in ecnEcho state => set EceBit in TCP header\n\n";
        }
     }
     //mona

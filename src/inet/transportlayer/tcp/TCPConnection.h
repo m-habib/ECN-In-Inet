@@ -265,9 +265,10 @@ class INET_API TCPStateVariables : public cObject
     uint32 tcpRcvQueueDrops;    // number of drops in tcp receive queue
 
     //mona
-    bool ecn_echo;  //indicates if connection is in echo mode (got CE indication from IP and didn't get CWR from sender yet)
+    bool ecnEchoState;  //indicates if connection is in echo mode (got CE indication from IP and didn't get CWR from sender yet)
     bool sndCwr;    //set if ECE was handled
     bool gotEce;    //set if packet with ECE arrived
+    bool gotCeIndication; //set if CE was set in controlInfo from IP
     simtime_t eceReactionTime; //records the time of the last ECE reaction
     //mona
 

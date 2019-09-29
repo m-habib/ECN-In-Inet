@@ -119,8 +119,9 @@ TCPStateVariables::TCPStateVariables()
     queueUpdate = true;
 
     sndCwr = false; //mona
-    ecn_echo = false; //mona
+    ecnEchoState = false; //mona
     gotEce = false; //mona
+    gotCeIndication = false; //mona
     eceReactionTime = 0; //mona
 }
 
