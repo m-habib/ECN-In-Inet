@@ -40,6 +40,16 @@ network FlatNet_mini
             delay = 0.1us;
             datarate = 10Mbps;
         }
+        channel ethernetline_fast extends DatarateChannel
+        {
+            delay = 0.1us;
+            datarate = 1024Mbps;
+        }
+        channel ethernetline_slow extends DatarateChannel
+        {
+            delay = 500us;
+            datarate = 0.0001Mbps;
+        }
     submodules:
         configurator: IPv4NetworkConfigurator {
             parameters:
@@ -57,14 +67,27 @@ network FlatNet_mini
             parameters:
                 @display("i=device/laptop_s");
         }
+//        cli_[7]: StandardHost {
+//            parameters:
+//                @display("i=device/laptop_s");
+//        }
         srv: StandardHost {
             parameters:
                 @display("i=device/server_s");
         }
     connections:
-        cli1.pppg++ <--> ethernetline <--> rte[0].pppg++;
-        rte[0].pppg++ <--> ethernetline <--> rte[1].pppg++;
+        cli1.pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        rte[0].pppg++ <--> ethernetline_slow <--> rte[1].pppg++;
 //        cli[1].pppg++ <--> ethernetline <--> rte[0].pppg++;
+
+//        cli_[0].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[1].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[2].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[3].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[4].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[5].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+//        cli_[6].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        
         srv.pppg++ <--> fiberline <--> rte[1].pppg++;
 }
 
