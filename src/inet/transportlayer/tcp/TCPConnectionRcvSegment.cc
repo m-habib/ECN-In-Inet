@@ -199,18 +199,20 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
 
     //TODO: mona: not sure if here or above/below
     static int ece_counter = 0; //TODO: temp variable for development purposes
-    if (tcpseg->getEceBit() == true){
-        //TODO: CWR...
-        TCPStateVariables* state = getState();
-        if(state){  //TODO: check if not in initialize?
-            if(ece_counter++ <= 2)
-                EV_INFO << "\n\nmona\nSender:\n  got packet with ECE, ece_counter = " << ece_counter;
-            if(ece_counter == 2){
-                ece_counter = 0;
-                EV_INFO << "\n, gotEce <- true";
-                state->gotEce = true;
+    TCPStateVariables* state = getState();
+    if(state->EcnEnabled){
+        if (tcpseg->getEceBit() == true){
+            //TODO: CWR...
+            if(state){  //TODO: check if not in initialize?
+                if(ece_counter++ <= 2)
+                    EV_INFO << "\n\nmona\nSender:\n  got packet with ECE, ece_counter = " << ece_counter;
+                if(ece_counter == 2){
+                    ece_counter = 0;
+                    EV_INFO << "\n, gotEce <- true";
+                    state->gotEce = true;
+                }
+                EV_INFO << "\n\n";
             }
-            EV_INFO << "\n\n";
         }
     }
     //mona
@@ -847,6 +849,12 @@ TCPEventCode TCPConnection::processSegmentInListen(TCPSegment *tcpseg, L3Address
             readHeaderOptions(tcpseg);
 
         state->ack_now = true;
+
+        //mona
+        if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == true){
+            state->endPointIsWillingECN = true;
+            EV << "\n\nmona: ECN-setup SYN packet received\n\n";
+        }
         sendSynAck();
         startSynRexmitTimer();
 
@@ -1043,6 +1051,18 @@ TCPEventCode TCPConnection::processSegmentInSynSent(TCPSegment *tcpseg, L3Addres
             tcpAlgorithm->established(true);
             tcpMain->emit(TCP::tcpConnectionAddedSignal, this);
             sendEstabIndicationToApp();
+
+            //mona
+            if(state->ecnSynSent){
+                if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == false){
+                    state->EcnEnabled = true;
+                    EV << "\n\nmona: ECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
+                }else{
+                    EV << "\n\nmona: non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                }
+                state->ecnSynSent = false;
+            }
+            //mona
 
             // This will trigger transition to ESTABLISHED. Timers and notifying
             // app will be taken care of in stateEntered().
@@ -1361,6 +1381,7 @@ void TCPConnection::process_TIMEOUT_SYN_REXMIT(TCPEventCode& event)
             break;
 
         case TCP_S_SYN_RCVD:
+            //mona: TODO: ecn init?
             sendSynAck();
             break;
 

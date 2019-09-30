@@ -118,11 +118,14 @@ TCPStateVariables::TCPStateVariables()
     sendQueueLimit = 0;
     queueUpdate = true;
 
-    sndCwr = false; //mona
-    ecnEchoState = false; //mona
-    gotEce = false; //mona
-    gotCeIndication = false; //mona
-    eceReactionTime = 0; //mona
+    sndCwr = false;         //mona
+    ecnEchoState = false;   //mona
+    gotEce = false;         //mona
+    gotCeIndication = false;//mona
+    EcnEnabled = false;     //mona
+    endPointIsWillingECN = false; //mona
+    ecnSynSent = false;     //mona
+    eceReactionTime = 0;    //mona
 }
 
 std::string TCPStateVariables::str() const

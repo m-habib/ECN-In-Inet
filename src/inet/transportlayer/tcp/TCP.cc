@@ -167,17 +167,19 @@ void TCP::handleMessage(cMessage *msg)
             TCPConnection *conn = findConnForSegment(tcpseg, srcAddr, destAddr);
             if (conn) {
                 //mona TODO: move to processSegment1stThru8th() ?
-                ASSERT(CE != -1);
                 TCPStateVariables* state = conn->getState();
-                if(CE == 3){    //TODO: check only in receiver-side (if processing ACK packet)
-                    if(state)  //TODO: check if not in initialize?
-                        state->gotCeIndication = true;
-                }
+                if(state->EcnEnabled){
+                    ASSERT(CE != -1);
+                    if(CE == 3){    //TODO: check only in receiver-side (if processing ACK packet)
+                        if(state)  //TODO: check if not in initialize?
+                            state->gotCeIndication = true;
+                    }
 
-                //TODO: check if congestion window reduced
-                if(tcpseg->getCwrBit() == true){
-                    EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecnEchoState\n\n" << CE;
-                    state->ecnEchoState = false;
+                    //TODO: check if congestion window reduced
+                    if(tcpseg->getCwrBit() == true){
+                        EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecnEcho State\n\n" << CE;
+                        state->ecnEchoState = false;
+                    }
                 }
                 //mona
 

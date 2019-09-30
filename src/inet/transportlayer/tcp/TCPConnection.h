@@ -269,6 +269,9 @@ class INET_API TCPStateVariables : public cObject
     bool sndCwr;    //set if ECE was handled
     bool gotEce;    //set if packet with ECE arrived
     bool gotCeIndication; //set if CE was set in controlInfo from IP
+    bool EcnEnabled;    //set if ECN enabled for this connection
+    bool endPointIsWillingECN; //set if the other end-point is willing to use ECN
+    bool ecnSynSent;           //set if ECN-setup SYN packet was sent
     simtime_t eceReactionTime; //records the time of the last ECE reaction
     //mona
 

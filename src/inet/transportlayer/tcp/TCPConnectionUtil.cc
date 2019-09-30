@@ -471,6 +471,25 @@ void TCPConnection::sendSyn()
 
     state->snd_max = state->snd_nxt = state->iss + 1;
 
+    //mona
+    bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
+    if(willingEcn){
+        tcpseg->setEceBit(true);
+        tcpseg->setCwrBit(true);
+        state->ecnSynSent = true;
+        EV << "\n\nmona: ECN-setup SYN packet sent\n\n";
+    }else{
+        // rfc 3168 page 16:
+        // A host that is not willing to use ECN on a TCP connection SHOULD
+        // clear both the ECE and CWR flags in all non-ECN-setup SYN and/or
+        // SYN-ACK packets that it sends to indicate this unwillingness.
+        tcpseg->setEceBit(false);
+        tcpseg->setCwrBit(false);
+        state->ecnSynSent = false;
+        EV << "\n\nmona: non-ECN-setup SYN packet sent\n\n";
+    }
+    //mona
+
     // write header options
     writeHeaderOptions(tcpseg);
 
@@ -490,6 +509,25 @@ void TCPConnection::sendSynAck()
     tcpseg->setWindow(state->rcv_wnd);
 
     state->snd_max = state->snd_nxt = state->iss + 1;
+
+    //mona
+    bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
+    if(willingEcn && state->endPointIsWillingECN){
+        tcpseg->setEceBit(true);
+        tcpseg->setCwrBit(false);
+        state->EcnEnabled = true;
+        EV << "\n\nmona: ECN-setup SYN-ACK packet sent\n\n";
+    }else if(state->endPointIsWillingECN){ //TODO: not sure if we have to.
+        // rfc 3168 page 16:
+        // A host that is not willing to use ECN on a TCP connection SHOULD
+        // clear both the ECE and CWR flags in all non-ECN-setup SYN and/or
+        // SYN-ACK packets that it sends to indicate this unwillingness.
+        tcpseg->setEceBit(false);
+        tcpseg->setCwrBit(false);
+        state->EcnEnabled = false;
+        EV << "\n\nmona: non-ECN-setup SYN-ACK packet sent\n\n";
+    }
+    //mona
 
     // write header options
     writeHeaderOptions(tcpseg);
@@ -638,7 +676,7 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setWindow(updateRcvWnd());
 
     //mona
-    if(state->sndCwr){
+    if(state->EcnEnabled && state->sndCwr){
         //TODO: enter congestion avoidance... CWND/=2...
         tcpseg->setCwrBit(true);
         EV_INFO << "\n\nmona\nSender:\n set CWR bit in header.\n\n";
