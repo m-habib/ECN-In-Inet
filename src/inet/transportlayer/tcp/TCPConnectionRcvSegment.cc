@@ -850,7 +850,7 @@ TCPEventCode TCPConnection::processSegmentInListen(TCPSegment *tcpseg, L3Address
         //mona
         if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == true){
             state->endPointIsWillingECN = true;
-            EV << "\n\nmona: ECN-setup SYN packet received\n\n";
+            EV << "\n\nmona:\n  ECN-setup SYN packet received\n\n";
         }
         sendSynAck();
         startSynRexmitTimer();
@@ -1053,13 +1053,20 @@ TCPEventCode TCPConnection::processSegmentInSynSent(TCPSegment *tcpseg, L3Addres
             if(state->ecnSynSent){
                 if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == false){
                     state->EcnEnabled = true;
-                    EV << "\n\nmona: ECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
+                    EV << "\n\nmona:\n  ECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
                 }else{
                     state->EcnEnabled = false;
-                    EV << "\n\nmona: non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                    EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
                 }
                 state->ecnSynSent = false;
+            }else{
+                state->EcnEnabled = false;
+                if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == false)
+                    EV << "\n\nmona:\n  ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                else
+                    EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
             }
+
             //mona
 
             // This will trigger transition to ESTABLISHED. Timers and notifying

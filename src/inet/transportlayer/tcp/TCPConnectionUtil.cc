@@ -359,6 +359,7 @@ void TCPConnection::configureStateVariables()
     long advertisedWindowPar = tcpMain->par("advertisedWindow").intValue();
     state->ws_support = tcpMain->par("windowScalingSupport");    // if set, this means that current host supports WS (RFC 1323)
     state->ws_manual_scale = tcpMain->par("windowScalingFactor"); // scaling factor (set manually) to help for TCP validation
+    state->ecnWillingness = tcpMain->par("ecnWillingness"); //mona: if set, current host is willing to use ECN
     if (!state->ws_support && (advertisedWindowPar > TCP_MAX_WIN || advertisedWindowPar <= 0))
         throw cRuntimeError("Invalid advertisedWindow parameter: %ld", advertisedWindowPar);
 
@@ -378,6 +379,7 @@ void TCPConnection::configureStateVariables()
     state->snd_mss = tcpMain->par("mss").intValue();    // Maximum Segment Size (RFC 793)
     state->ts_support = tcpMain->par("timestampSupport");    // if set, this means that current host supports TS (RFC 1323)
     state->sack_support = tcpMain->par("sackSupport");    // if set, this means that current host supports SACK (RFC 2018, 2883, 3517)
+
 
     if (state->sack_support) {
         std::string algorithmName1 = "TCPReno";
@@ -472,12 +474,12 @@ void TCPConnection::sendSyn()
     state->snd_max = state->snd_nxt = state->iss + 1;
 
     //mona
-    bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
-    if(willingEcn){
+    //bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
+    if(state->ecnWillingness){
         tcpseg->setEceBit(true);
         tcpseg->setCwrBit(true);
         state->ecnSynSent = true;
-        EV << "\n\nmona: ECN-setup SYN packet sent\n\n";
+        EV << "\n\nmona:\n  ECN-setup SYN packet sent\n\n";
     }else{
         // rfc 3168 page 16:
         // A host that is not willing to use ECN on a TCP connection SHOULD
@@ -486,7 +488,7 @@ void TCPConnection::sendSyn()
         tcpseg->setEceBit(false);
         tcpseg->setCwrBit(false);
         state->ecnSynSent = false;
-        EV << "\n\nmona: non-ECN-setup SYN packet sent\n\n";
+        EV << "\n\nmona:\n  non-ECN-setup SYN packet sent\n\n";
     }
     //mona
 
@@ -511,8 +513,8 @@ void TCPConnection::sendSynAck()
     state->snd_max = state->snd_nxt = state->iss + 1;
 
     //mona
-    bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
-    if(willingEcn){
+    //bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
+    if(state->ecnWillingness){
         tcpseg->setEceBit(true);
         tcpseg->setCwrBit(false);
         EV << "\n\nmona:\n  ECN-setup SYN-ACK packet sent\n\n";
@@ -521,7 +523,7 @@ void TCPConnection::sendSynAck()
         tcpseg->setCwrBit(false);
         EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet sent\n\n";
     }
-    if(willingEcn && state->endPointIsWillingECN){
+    if(state->ecnWillingness && state->endPointIsWillingECN){
         state->EcnEnabled = true;
         EV << "\n\nmona:\n  both end-points are willing ECN... ECN enabled\n\n";
     }else{ //TODO: not sure if we have to.
