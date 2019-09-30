@@ -200,19 +200,16 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
     //TODO: mona: not sure if here or above/below
     static int ece_counter = 0; //TODO: temp variable for development purposes
     TCPStateVariables* state = getState();
-    if(state->EcnEnabled){
+    if(state && state->EcnEnabled){
         if (tcpseg->getEceBit() == true){
-            //TODO: CWR...
-            if(state){  //TODO: check if not in initialize?
-                if(ece_counter++ <= 2)
-                    EV_INFO << "\n\nmona\nSender:\n  got packet with ECE, ece_counter = " << ece_counter;
-                if(ece_counter == 2){
-                    ece_counter = 0;
-                    EV_INFO << "\n, gotEce <- true";
-                    state->gotEce = true;
-                }
-                EV_INFO << "\n\n";
+            if(ece_counter++ <= 2)
+                EV_INFO << "\n\nmona:\n  got packet with ECE, ece_counter = " << ece_counter;
+            if(ece_counter == 2){
+                ece_counter = 0;
+                EV_INFO << "\n, gotEce <- true";
+                state->gotEce = true;
             }
+            EV_INFO << "\n\n";
         }
     }
     //mona
@@ -1058,6 +1055,7 @@ TCPEventCode TCPConnection::processSegmentInSynSent(TCPSegment *tcpseg, L3Addres
                     state->EcnEnabled = true;
                     EV << "\n\nmona: ECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
                 }else{
+                    state->EcnEnabled = false;
                     EV << "\n\nmona: non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
                 }
                 state->ecnSynSent = false;

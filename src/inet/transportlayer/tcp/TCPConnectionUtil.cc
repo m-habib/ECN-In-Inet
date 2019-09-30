@@ -512,20 +512,25 @@ void TCPConnection::sendSynAck()
 
     //mona
     bool willingEcn = true; //TODO: mhabib: tmp var, take the value from parsing the ini file
-    if(willingEcn && state->endPointIsWillingECN){
+    if(willingEcn){
         tcpseg->setEceBit(true);
         tcpseg->setCwrBit(false);
+        EV << "\n\nmona:\n  ECN-setup SYN-ACK packet sent\n\n";
+    }else{
+        tcpseg->setEceBit(false);
+        tcpseg->setCwrBit(false);
+        EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet sent\n\n";
+    }
+    if(willingEcn && state->endPointIsWillingECN){
         state->EcnEnabled = true;
-        EV << "\n\nmona: ECN-setup SYN-ACK packet sent\n\n";
-    }else if(state->endPointIsWillingECN){ //TODO: not sure if we have to.
+        EV << "\n\nmona:\n  both end-points are willing ECN... ECN enabled\n\n";
+    }else{ //TODO: not sure if we have to.
         // rfc 3168 page 16:
         // A host that is not willing to use ECN on a TCP connection SHOULD
         // clear both the ECE and CWR flags in all non-ECN-setup SYN and/or
         // SYN-ACK packets that it sends to indicate this unwillingness.
-        tcpseg->setEceBit(false);
-        tcpseg->setCwrBit(false);
         state->EcnEnabled = false;
-        EV << "\n\nmona: non-ECN-setup SYN-ACK packet sent\n\n";
+        EV << "\n\nmona:\n  ECN disabled\n\n";
     }
     //mona
 
@@ -588,16 +593,15 @@ void TCPConnection::sendAck()
     tcpseg->setWindow(updateRcvWnd());
     //mona
     TCPStateVariables* state = getState();
-    if(state){  //TODO: check if not in initialize?
+    if(state && state->EcnEnabled){  //TODO: check if not in initialize?
        if(state->gotCeIndication){
            state->ecnEchoState = true;
            state->gotCeIndication = false;
-           EV << "\n\nmona: receiver got CE, entering echo state\n\n";
+           EV << "\n\nmona:\n   got CE... Entering ecnEcho state\n\n";
        }
        if (state->ecnEchoState == true){
            tcpseg->setEceBit(true);
-           EV_INFO << "\n\n\nmona\nReceiver: \n";
-           EV_INFO << "  Sending ACK: in ecnEcho state => set EceBit in TCP header\n\n";
+           EV_INFO << "\n\nmona:\nIn ecnEcho state... send ACK with EceBit set\n\n";
        }
     }
     //mona
@@ -677,9 +681,8 @@ void TCPConnection::sendSegment(uint32 bytes)
 
     //mona
     if(state->EcnEnabled && state->sndCwr){
-        //TODO: enter congestion avoidance... CWND/=2...
         tcpseg->setCwrBit(true);
-        EV_INFO << "\n\nmona\nSender:\n set CWR bit in header.\n\n";
+        EV_INFO << "\n\nmona\n set CWR bit in header.\n\n";
         state->sndCwr = false;
     }
     //mona

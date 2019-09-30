@@ -159,7 +159,7 @@ void TCP::handleMessage(cMessage *msg)
             destAddr = controlInfo->getDestinationAddress();
             //interfaceId = controlInfo->getInterfaceId();
             int CE = controlInfo->getExplicitCongestionNotification();
-
+            ASSERT(CE != -1);
 
             delete ctrl;
 
@@ -168,16 +168,11 @@ void TCP::handleMessage(cMessage *msg)
             if (conn) {
                 //mona TODO: move to processSegment1stThru8th() ?
                 TCPStateVariables* state = conn->getState();
-                if(state->EcnEnabled){
-                    ASSERT(CE != -1);
-                    if(CE == 3){    //TODO: check only in receiver-side (if processing ACK packet)
-                        if(state)  //TODO: check if not in initialize?
-                            state->gotCeIndication = true;
-                    }
-
-                    //TODO: check if congestion window reduced
+                if(state && state->EcnEnabled){
+                    if(CE == 3)    //TODO: check only in receiver-side (if processing ACK packet)
+                        state->gotCeIndication = true;
                     if(tcpseg->getCwrBit() == true){
-                        EV_INFO << "\n\nmona\nReceiver:\n  Got CWR... Leaving ecnEcho State\n\n" << CE;
+                        EV_INFO << "\n\nmona\n  Got CWR... Leaving ecnEcho State\n\n" << CE;
                         state->ecnEchoState = false;
                     }
                 }
