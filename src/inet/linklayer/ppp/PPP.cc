@@ -39,6 +39,7 @@ simsignal_t PPP::packetSentToLowerSignal = registerSignal("packetSentToLower");
 simsignal_t PPP::packetReceivedFromLowerSignal = registerSignal("packetReceivedFromLower");
 simsignal_t PPP::packetSentToUpperSignal = registerSignal("packetSentToUpper");
 simsignal_t PPP::packetReceivedFromUpperSignal = registerSignal("packetReceivedFromUpper");
+simsignal_t PPP::queueLengthReachedThreshold = registerSignal("queueLengthReachedThreshold");   //mona
 
 PPP::~PPP()
 {

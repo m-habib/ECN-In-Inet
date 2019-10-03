@@ -48,7 +48,7 @@ network FlatNet_mini
         channel ethernetline_slow extends DatarateChannel
         {
             delay = 100us;
-            datarate = 0.001Mbps;
+            datarate = 0.0001Mbps;
         }
     submodules:
         configurator: IPv4NetworkConfigurator {
@@ -76,8 +76,8 @@ network FlatNet_mini
                 @display("i=device/server_s");
         }
     connections:
-        cli1.pppg++ <--> ethernetline <--> rte[0].pppg++;
-        rte[0].pppg++ <--> ethernetline <--> rte[1].pppg++;
+        cli1.pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        rte[0].pppg++ <--> ethernetline_slow <--> rte[1].pppg++;
 //        cli[1].pppg++ <--> ethernetline <--> rte[0].pppg++;
 
 //		for i = 0..29{

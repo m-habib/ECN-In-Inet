@@ -30,6 +30,7 @@
 #include "inet/networklayer/ipv4/IPv4FragBuf.h"
 #include "inet/common/ProtocolMap.h"
 #include "inet/common/queue/QueueBase.h"
+#include "inet/common/queue/DropTailQueue.h" //mona
 
 namespace inet {
 
@@ -63,6 +64,7 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     typedef std::map<IPv4Address, cPacketQueue> PendingPackets;
 
   protected:
+    DropTailQueue* myDropTailQueue_m = nullptr;   //mona
     IIPv4RoutingTable *rt = nullptr;
     IInterfaceTable *ift = nullptr;
     IARP *arp = nullptr;

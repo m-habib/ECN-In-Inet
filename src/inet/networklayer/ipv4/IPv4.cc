@@ -35,6 +35,7 @@
 #include "inet/networklayer/contract/IInterfaceTable.h"
 #include "inet/common/ModuleAccess.h"
 #include "inet/common/LayeredProtocolBase.h"
+#include "inet/linklayer/ppp/PPP.h"
 
 namespace inet {
 
@@ -90,6 +91,14 @@ void IPv4::initialize(int stage)
         arpModule->subscribe(IARP::completedARPResolutionSignal, this);
         arpModule->subscribe(IARP::failedARPResolutionSignal, this);
 
+        //mona
+//        auto myModule = getModuleByPath("^.^.ppp[1]");
+        DropTailQueue* myQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");
+        myDropTailQueue_m = myQueue;
+//        auto pppModule = getModuleFromPar<cModule>(par("pppModule"), this);
+//        pppModule->subscribe(PPP::queueLengthReachedThreshold, this);
+        //mona
+
         WATCH(numMulticast);
         WATCH(numLocalDeliver);
         WATCH(numDropped);
@@ -128,9 +137,15 @@ void IPv4::handleMessage(cMessage *msg)
     else if (!msg->isSelfMessage() && msg->getArrivalGate()->isName("arpIn"))
         endService(PK(msg));
     else{
+        //mona
+        EV << "\n\n\n\n\n\n\nIPv4 full path is " << getFullPath() << "\n\n\n\n\n\n\n\n\n\n";
 //        if(queue.length() > 5){
 //            EV_INFO << "\n\n\n\nKOOOOOOOOOOS EMOOOOOOOOO\n\n\n\n";
 //        }
+        if(myDropTailQueue_m)
+            EV_INFO << "\n\n\n\n\n\n\n\n\n\n\nIn from IPv4 - ppp[1] queue size is: " << myDropTailQueue_m->queue.getLength() << "\n\n\n\n\n\n\n\n\n\n\n";
+        else
+            EV_INFO << "\n\n\n\nnull\n\n\n\n\n";
         QueueBase::handleMessage(msg);
     }
 }

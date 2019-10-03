@@ -34,7 +34,11 @@ class INET_API DropTailQueue : public PassiveQueueBase
     int frameCapacity;
 
     // state
+    //mona
+  public:
     cQueue queue;
+    //mona
+  protected:
     cGate *outGate;
 
     // statistics
