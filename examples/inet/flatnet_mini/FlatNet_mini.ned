@@ -53,13 +53,13 @@ network FlatNet_mini
     submodules:
         configurator: IPv4NetworkConfigurator {
             parameters:
-                
+
                 config = xml("<config> \
                 				<interface hosts='cli1' address='192.168.0.37' netmask='255.255.x.x'/> \
                                 <interface hosts='*' address='192.168.x.x' netmask='255.255.x.x'/> \
                                 </config>");
         }
-        rte[2]: Router {
+        rte[3]: Router {
             parameters:
                 @display("is=vs");
         }
@@ -67,10 +67,10 @@ network FlatNet_mini
             parameters:
                 @display("i=device/laptop_s");
         }
-//        cli_[30]: StandardHost {
-//            parameters:
-//                @display("i=device/laptop_s");
-//        }
+        //        cli_[30]: StandardHost {
+        //            parameters:
+        //                @display("i=device/laptop_s");
+        //        }
         srv: StandardHost {
             parameters:
                 @display("i=device/server_s");
@@ -78,19 +78,20 @@ network FlatNet_mini
     connections:
         cli1.pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
         rte[0].pppg++ <--> ethernetline_slow <--> rte[1].pppg++;
+        rte[1].pppg++ <--> ethernetline_fast <--> rte[2].pppg++;
 //        cli[1].pppg++ <--> ethernetline <--> rte[0].pppg++;
 
-//		for i = 0..29{
-//        	cli_[i].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//		}
-//        cli_[1].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        cli_[2].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        cli_[3].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        cli_[4].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        cli_[5].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        cli_[6].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
-//        
-        srv.pppg++ <--> fiberline <--> rte[1].pppg++;
+        //		for i = 0..29{
+        //        	cli_[i].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //		}
+        //        cli_[1].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        cli_[2].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        cli_[3].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        cli_[4].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        cli_[5].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        cli_[6].pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
+        //        
+        srv.pppg++ <--> fiberline <--> rte[2].pppg++;
 }
 
 

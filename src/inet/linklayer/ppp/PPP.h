@@ -40,9 +40,7 @@ class INET_API PPP : public MACBase
     long txQueueLimit = -1;
     cGate *physOutGate = nullptr;
     cChannel *datarateChannel = nullptr;    // nullptr if we're not connected
-  public:       //mona
     cQueue txQueue;
-  protected:    //mona
     cMessage *endTransmissionEvent = nullptr;
     IPassiveQueue *queueModule = nullptr;
 

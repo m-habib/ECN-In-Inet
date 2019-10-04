@@ -64,7 +64,7 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     typedef std::map<IPv4Address, cPacketQueue> PendingPackets;
 
   protected:
-    DropTailQueue* myDropTailQueue_m = nullptr;   //mona
+    DropTailQueue* pppOutQueue = nullptr;   //mona
     IIPv4RoutingTable *rt = nullptr;
     IInterfaceTable *ift = nullptr;
     IARP *arp = nullptr;
@@ -303,8 +303,9 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
      */
     virtual bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
 
-    /// cListener method
+    /// cListener methods
     virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details) override;
+    virtual void receiveSignal(cComponent *source, simsignal_t signalID, long l, cObject *details) override;    //mona
 
   protected:
     virtual bool isNodeUp();

@@ -49,10 +49,10 @@ cMessage *DropTailQueue::enqueue(cMessage *msg)
     else {
         //mona
         //msg->setControlInfo(p)
-        if(queue.getLength() > 4){
-            EV << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMONA: queue.getlength > 4 \n";
-            EV << "Full path is: " << getFullPath() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-        }
+//        if(queue.getLength() > 4){
+//            EV << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMONA: queue.getlength > 4 \n";
+//            EV << "Full path is: " << getFullPath() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//        }
         //mona
         queue.insert(msg);
         emit(queueLengthSignal, queue.getLength());

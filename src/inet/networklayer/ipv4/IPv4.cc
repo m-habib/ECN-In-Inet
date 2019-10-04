@@ -35,7 +35,8 @@
 #include "inet/networklayer/contract/IInterfaceTable.h"
 #include "inet/common/ModuleAccess.h"
 #include "inet/common/LayeredProtocolBase.h"
-#include "inet/linklayer/ppp/PPP.h"
+#include "inet/linklayer/ppp/PPP.h" //mona
+#include "inet/common/queue/DropTailQueue.h" //mona
 
 namespace inet {
 
@@ -92,11 +93,11 @@ void IPv4::initialize(int stage)
         arpModule->subscribe(IARP::failedARPResolutionSignal, this);
 
         //mona
-//        auto myModule = getModuleByPath("^.^.ppp[1]");
-        DropTailQueue* myQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");
-        myDropTailQueue_m = myQueue;
-//        auto pppModule = getModuleFromPar<cModule>(par("pppModule"), this);
-//        pppModule->subscribe(PPP::queueLengthReachedThreshold, this);
+        pppOutQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");   //TODO: better to set path as par in ned file (according to stackoverflow)
+        if(pppOutQueue){
+            cModule *pppQueueModule = check_and_cast<cModule *>(pppOutQueue);
+            pppQueueModule->subscribe(DropTailQueue::queueLengthSignal, this);
+        }
         //mona
 
         WATCH(numMulticast);
@@ -137,15 +138,6 @@ void IPv4::handleMessage(cMessage *msg)
     else if (!msg->isSelfMessage() && msg->getArrivalGate()->isName("arpIn"))
         endService(PK(msg));
     else{
-        //mona
-        EV << "\n\n\n\n\n\n\nIPv4 full path is " << getFullPath() << "\n\n\n\n\n\n\n\n\n\n";
-//        if(queue.length() > 5){
-//            EV_INFO << "\n\n\n\nKOOOOOOOOOOS EMOOOOOOOOO\n\n\n\n";
-//        }
-        if(myDropTailQueue_m)
-            EV_INFO << "\n\n\n\n\n\n\n\n\n\n\nIn from IPv4 - ppp[1] queue size is: " << myDropTailQueue_m->queue.getLength() << "\n\n\n\n\n\n\n\n\n\n\n";
-        else
-            EV_INFO << "\n\n\n\nnull\n\n\n\n\n";
         QueueBase::handleMessage(msg);
     }
 }
@@ -1234,6 +1226,15 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj,
         arpResolutionTimedOut(check_and_cast<IARP::Notification *>(obj));
     }
 }
+
+//mona
+void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObject *details)
+{
+    if (signalID == DropTailQueue::queueLengthSignal) {
+        EV << "\n\n\n\n\n\n\n\n\nin IPv4 got queue length signal: length = " << l << "\n\n\n\n\n\n\n\n\n";
+    }
+}
+//mona
 
 } // namespace inet
 
