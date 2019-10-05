@@ -31,6 +31,8 @@
 #include "inet/common/ProtocolMap.h"
 #include "inet/common/queue/QueueBase.h"
 #include "inet/common/queue/DropTailQueue.h" //mona
+#include <vector>   //mona
+#include <tuple> //mona
 
 namespace inet {
 
@@ -62,9 +64,14 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
         const IHook::Type hookType = (IHook::Type)-1;
     };
     typedef std::map<IPv4Address, cPacketQueue> PendingPackets;
+    typedef std::vector<std::tuple<long, simtime_t>> pppOutQueueLengthVector; //mona: saves the history of out PPP queue length
 
   protected:
     DropTailQueue* pppOutQueue = nullptr;   //mona
+    pppOutQueueLengthVector pppQueueLength;    //mona: saves PPP out-queue length history
+    double averagingIntervalSize = 20;  //mona - TODO: define a par in ini and assign it.
+    int qLengthThreshold = 6;       //mona
+
     IIPv4RoutingTable *rt = nullptr;
     IInterfaceTable *ift = nullptr;
     IARP *arp = nullptr;
@@ -312,6 +319,8 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     virtual void stop();
     virtual void start();
     virtual void flush();
+
+    int PppOuytQueueAverageLength();    //mona
 };
 
 } // namespace inet

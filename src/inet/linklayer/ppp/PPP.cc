@@ -308,7 +308,7 @@ void PPP::handleMessage(cMessage *msg)
             }
             else {
                 // We are idle, so we can start transmitting right away.
-                startTransmitting(PK(msg));
+                startTransmitting(PK(msg));//mona-info: idle state (I think == queue is empty)
             }
         }
     }

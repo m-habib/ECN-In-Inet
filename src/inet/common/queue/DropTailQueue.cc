@@ -66,7 +66,7 @@ cMessage *DropTailQueue::dequeue()
         return nullptr;
 
     cMessage *msg = (cMessage *)queue.pop();
-
+    EV << "\n\n\n\nPacket Dequeued\n\n\n\n";
     // statistics
     emit(queueLengthSignal, queue.getLength());
 

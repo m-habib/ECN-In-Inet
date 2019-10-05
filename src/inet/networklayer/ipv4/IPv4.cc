@@ -214,15 +214,17 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
 //    }else{
 ////        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
 //    }
-    if(queue.length() > 5){
-        EV_INFO << "\n\nmona: Queue Size > 5 ";
-        EV_INFO << "\n    set CE.\n\n";
+    int averageLength = PppOuytQueueAverageLength();
+    EV_INFO << "\n\n\n\n average length is: " << averageLength;
+    if(averageLength > qLengthThreshold){
+        EV_INFO << "\nset CE";
         datagram->setExplicitCongestionNotification(3);
 //        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
 //            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
 //            datagram->setExplicitCongestionNotification(3);
 //        }
     }
+    EV_INFO << "\n\n\n\n";
 //mona
 
     EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
@@ -817,6 +819,8 @@ IPv4Datagram *IPv4::encapsulate(cPacket *transportPacket, IPv4ControlInfo *contr
     datagram->setDontFragment(controlInfo->getDontFragment());
     datagram->setFragmentOffset(0);
 
+    //TODO: mona - set CE = 1 if ECN is enabled (get willingness from controlInfo)
+
     short ttl;
     if (controlInfo->getTimeToLive() > 0)
         ttl = controlInfo->getTimeToLive();
@@ -1231,9 +1235,62 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj,
 void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObject *details)
 {
     if (signalID == DropTailQueue::queueLengthSignal) {
-        EV << "\n\n\n\n\n\n\n\n\nin IPv4 got queue length signal: length = " << l << "\n\n\n\n\n\n\n\n\n";
+        pppQueueLength.push_back(std::tuple<long, simtime_t>(l, simTime()));
+        EV << "\n\n\n\n\n\n\n\n\nin IPv4 got queue length signal:\n" <<
+              "    length = " << l <<
+              "\n    at time: " << simTime() << "\n    History:\n";
+        for(int i = 0; i < pppQueueLength.size(); i++){
+            EV << "      Length: " << std::get<0>(pppQueueLength[i]) <<
+            "  at time: " <<std::get<1>(pppQueueLength[i]) << "\n";
+        }
+        EV << "\n\n\n\n\n\n\n";
     }
 }
+
+int IPv4::PppOuytQueueAverageLength()
+{
+    int vSize = pppQueueLength.size();
+    if(vSize == 0)
+        return 0;
+    simtime_t avgIntervalEnd = simTime();
+    simtime_t avgIntervalStart = avgIntervalEnd - averagingIntervalSize;
+    if(avgIntervalStart < 0)
+        avgIntervalStart = 0;   //TODO: use SIMTIME_ZERO
+    std::tuple<long, simtime_t> oldestTuple = pppQueueLength.front();
+    long oldestQueueLength = std::get<0>(oldestTuple);
+    simtime_t oldestSimTime = std::get<1>(oldestTuple);
+    int i;
+    //find the tuple to start from
+    if(avgIntervalStart < oldestSimTime){
+        oldestQueueLength = 0;
+        i = -1;
+    } else {
+        for (i = 0; i < vSize; i++) {
+            std::tuple<long, simtime_t> currentTuple = pppQueueLength[i];
+            if (i == vSize - 1)
+                break;
+            std::tuple<long, simtime_t> nextTuple = pppQueueLength[i+1];
+            if (std::get<1>(nextTuple) > avgIntervalStart)
+                break;
+        }
+        oldestQueueLength = std::get<0>(pppQueueLength[i]);
+    }
+
+    //calc average queue length starting from the relevant tuple
+    simtime_t currentSampleStart = avgIntervalStart;
+    long currentSampleQueueLength = oldestQueueLength;
+    double sum = 0;
+    for(i = i + 1; i < vSize; i++){
+        simtime_t nextSampleTime = std::get<1>(pppQueueLength[i]);
+        sum += currentSampleQueueLength * SIMTIME_DBL(nextSampleTime - currentSampleStart);
+        currentSampleStart = nextSampleTime;
+        currentSampleQueueLength = std::get<0>(pppQueueLength[i]);
+    }
+    sum += currentSampleQueueLength * SIMTIME_DBL(avgIntervalEnd - currentSampleStart);
+    double avgQueueLength = sum /  averagingIntervalSize;
+    return avgQueueLength;
+}
+
 //mona
 
 } // namespace inet
