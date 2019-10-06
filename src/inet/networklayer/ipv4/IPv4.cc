@@ -198,36 +198,46 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
     // hop counter decrement
     datagram->setTimeToLive(datagram->getTimeToLive() - 1);
 
-//    if(datagram->getExplicitCongestionNotification() == 3)
-//        EV_INFO << "\n\n\n\n*******\n\n\n\n Packet with CE (ECN field == 3).\n\n\n\n*******\n\n\n\n";
-
+    EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
 
     //mona
-//    if(datagram->getSourceAddress() == IPv4Address(192, 168, 0, 37)){  //only turn on CE when messages are from Client to Server (delete later)
-//        static int counter = 1;
-//        if(counter++ <= 8)
-//            EV_INFO << "\n\nmona\ncounter is " << counter;
-//        if(counter == 8){
-//            EV_INFO << "\nSet CE (packet from 192.168.0.37)\n\n";
-//            datagram->setExplicitCongestionNotification(3); //for developing purposes, we always set-on CE
-//        }
-//    }else{
-////        EV_INFO << "\n\n\nmona\n packet not from 192.168.0.37, Not Setting CE\n\n\n";
-//    }
-    int averageLength = PppOuytQueueAverageLength();
-    EV_INFO << "\n\n\n\n average length is: " << averageLength;
-    if(averageLength > qLengthThreshold){
-        EV_INFO << "\nset CE";
-        datagram->setExplicitCongestionNotification(3);
-//        if(datagram->getExplicitCongestionNotification() == 1 || datagram->getExplicitCongestionNotification() == 2){
-//            EV_INFO << "\n    ECN is enabled, set CE.\n\n\n\n*******\n\n\n\n";
-//            datagram->setExplicitCongestionNotification(3);
-//        }
-    }
-    EV_INFO << "\n\n\n\n";
-//mona
+    // rfc-3168, page 6-7:
+    // The ECN-Capable Transport (ECT) codepoints '10' and '01' are set by the
+    // data sender to indicate that the end-points of the transport protocol
+    // are ECN-capable; we call them ECT(0) and ECT(1) respectively...
+    // ...The not-ECT codepoint '00' indicates a packet that is not using ECN.
+    // The CE codepoint '11' is set by a router to indicate congestion to
+    // the end nodes.  Routers that have a packet arriving at a full queue
+    // drop the packet, just as they do in the absence of ECN.
+    //
+    //  +-----+-----+
+    //  | ECN FIELD |
+    //  +-----+-----+
+    //    ECT   CE         [Obsolete] RFC 2481 names for the ECN bits.
+    //     0     0         Not-ECT
+    //     0     1         ECT(1)
+    //     1     0         ECT(0)
+    //     1     1         CE
+    //
+    // Figure 1: The ECN Field in IP.
 
-    EV_DETAIL << "Received datagram `" << datagram->getName() << "' with dest=" << datagram->getDestAddress() << "\n";
+//    if (datagram->getExplicitCongestionNotification() == 3) //if CE
+//        EV_INFO << "\n\nReceived packet with CE set\n\n";
+    double averageLength = PppOuytQueueAverageLength();
+    if (averageLength > qLengthThreshold) {
+        EV_INFO << "\n\nAverage queue length is " << averageLength << "\n";
+        //if ECN-Capable Transport (ECT)
+        if (datagram->getExplicitCongestionNotification() == 1
+                || datagram->getExplicitCongestionNotification() == 2) {
+            EV_INFO << "ECN-Capable Transport... set CE";
+            datagram->setExplicitCongestionNotification(3); //set CE
+        } else {
+            EV_INFO << "Not-ECN-Capable Transport";
+        }
+        EV_INFO << "\n\n";
+    }
+    //mona
+
 
     const InterfaceEntry *destIE = nullptr;
     L3Address nextHop(IPv4Address::UNSPECIFIED_ADDRESS);
@@ -696,9 +706,7 @@ cPacket *IPv4::decapsulate(IPv4Datagram *datagram)
     controlInfo->setTypeOfService(datagram->getTypeOfService());
     controlInfo->setInterfaceId(fromIE ? fromIE->getInterfaceId() : -1);
     controlInfo->setTimeToLive(datagram->getTimeToLive());
-    int EcnValue = datagram->getExplicitCongestionNotification();//mona
-    controlInfo->setExplicitCongestionNotification(EcnValue);//mona
-//    controlInfo->setExplicitCongestionNotification(datagram->getExplicitCongestionNotification());//mona
+    controlInfo->setExplicitCongestionNotification(datagram->getExplicitCongestionNotification());//mona
 
     // original IPv4 datagram might be needed in upper layers to send back ICMP error message
     controlInfo->setOrigDatagram(datagram);
@@ -818,8 +826,7 @@ IPv4Datagram *IPv4::encapsulate(cPacket *transportPacket, IPv4ControlInfo *contr
     datagram->setMoreFragments(false);
     datagram->setDontFragment(controlInfo->getDontFragment());
     datagram->setFragmentOffset(0);
-
-    //TODO: mona - set CE = 1 if ECN is enabled (get willingness from controlInfo)
+    datagram->setExplicitCongestionNotification(controlInfo->getExplicitCongestionNotification());  //mona
 
     short ttl;
     if (controlInfo->getTimeToLive() > 0)
@@ -1234,20 +1241,11 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj,
 //mona
 void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObject *details)
 {
-    if (signalID == DropTailQueue::queueLengthSignal) {
+    if (signalID == DropTailQueue::queueLengthSignal)
         pppQueueLength.push_back(std::tuple<long, simtime_t>(l, simTime()));
-        EV << "\n\n\n\n\n\n\n\n\nin IPv4 got queue length signal:\n" <<
-              "    length = " << l <<
-              "\n    at time: " << simTime() << "\n    History:\n";
-        for(int i = 0; i < pppQueueLength.size(); i++){
-            EV << "      Length: " << std::get<0>(pppQueueLength[i]) <<
-            "  at time: " <<std::get<1>(pppQueueLength[i]) << "\n";
-        }
-        EV << "\n\n\n\n\n\n\n";
-    }
 }
 
-int IPv4::PppOuytQueueAverageLength()
+double IPv4::PppOuytQueueAverageLength()
 {
     int vSize = pppQueueLength.size();
     if(vSize == 0)
@@ -1290,7 +1288,6 @@ int IPv4::PppOuytQueueAverageLength()
     double avgQueueLength = sum /  averagingIntervalSize;
     return avgQueueLength;
 }
-
 //mona
 
 } // namespace inet

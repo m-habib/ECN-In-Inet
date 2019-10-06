@@ -122,7 +122,7 @@ TCPStateVariables::TCPStateVariables()
     ecnEchoState = false;         //mona
     gotEce = false;               //mona
     gotCeIndication = false;      //mona
-    EcnEnabled = false;           //mona
+    ect = false;                  //mona
     endPointIsWillingECN = false; //mona
     ecnSynSent = false;           //mona
     ecnWillingness = false;       //mona

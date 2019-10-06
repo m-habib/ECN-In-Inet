@@ -70,7 +70,7 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     DropTailQueue* pppOutQueue = nullptr;   //mona
     pppOutQueueLengthVector pppQueueLength;    //mona: saves PPP out-queue length history
     double averagingIntervalSize = 20;  //mona - TODO: define a par in ini and assign it.
-    int qLengthThreshold = 6;       //mona
+    int qLengthThreshold = 3;       //mona
 
     IIPv4RoutingTable *rt = nullptr;
     IInterfaceTable *ift = nullptr;
@@ -320,7 +320,7 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     virtual void start();
     virtual void flush();
 
-    int PppOuytQueueAverageLength();    //mona
+    double PppOuytQueueAverageLength();    //mona
 };
 
 } // namespace inet

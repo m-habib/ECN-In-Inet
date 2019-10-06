@@ -168,11 +168,11 @@ void TCP::handleMessage(cMessage *msg)
             if (conn) {
                 //mona TODO: move to processSegment1stThru8th() ?
                 TCPStateVariables* state = conn->getState();
-                if(state && state->EcnEnabled){
+                if(state && state->ect){
                     if(CE == 3)    //TODO: check only in receiver-side (if processing ACK packet)
                         state->gotCeIndication = true;
                     if(tcpseg->getCwrBit() == true){
-                        EV_INFO << "\n\nmona\n  Got CWR... Leaving ecnEcho State\n\n" << CE;
+                        EV_INFO << "\n\nReceived CWR... Leaving ecnEcho State\n\n" << CE;
                         state->ecnEchoState = false;
                     }
                 }
@@ -206,13 +206,6 @@ void TCP::handleMessage(cMessage *msg)
 
             EV_INFO << "TCP connection created for " << msg << "\n";
         }
-
-        //mona
-        TCPStateVariables* state = conn->getState();
-        if(state){      //TODO: check if not in initialize?
-            //TODO: Sender Code
-        }
-        //mona
 
         bool ret = conn->processAppCommand(msg);
         if (!ret)

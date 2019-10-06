@@ -260,6 +260,17 @@ void TCPConnection::sendToIP(TCPSegment *tcpseg)
     controlInfo->setTransportProtocol(IP_PROT_TCP);
     controlInfo->setSourceAddress(localAddr);
     controlInfo->setDestinationAddress(remoteAddr);
+
+    // We decided to use ECT(1) to indicate ECN capable transport.
+    // according to rfc-3168, page 6:
+    // "...  Routers treat the ECT(0) and ECT(1) codepoints
+    // as equivalent.  Senders are free to use either the ECT(0) or the
+    // ECT(1) codepoint to indicate ECT ..."
+    if(state->ect)
+        controlInfo->setExplicitCongestionNotification(1);
+    else
+        controlInfo->setExplicitCongestionNotification(0);
+
     tcpseg->setControlInfo(check_and_cast<cObject *>(controlInfo));
     tcpMain->send(tcpseg, "ipOut");
 }
@@ -479,7 +490,7 @@ void TCPConnection::sendSyn()
         tcpseg->setEceBit(true);
         tcpseg->setCwrBit(true);
         state->ecnSynSent = true;
-        EV << "\n\nmona:\n  ECN-setup SYN packet sent\n\n";
+        EV << "\n\nECN-setup SYN packet sent\n\n";
     }else{
         // rfc 3168 page 16:
         // A host that is not willing to use ECN on a TCP connection SHOULD
@@ -488,7 +499,7 @@ void TCPConnection::sendSyn()
         tcpseg->setEceBit(false);
         tcpseg->setCwrBit(false);
         state->ecnSynSent = false;
-        EV << "\n\nmona:\n  non-ECN-setup SYN packet sent\n\n";
+        EV << "\n\nnon-ECN-setup SYN packet sent\n\n";
     }
     //mona
 
@@ -517,22 +528,22 @@ void TCPConnection::sendSynAck()
     if(state->ecnWillingness){
         tcpseg->setEceBit(true);
         tcpseg->setCwrBit(false);
-        EV << "\n\nmona:\n  ECN-setup SYN-ACK packet sent\n\n";
+        EV << "\n\nECN-setup SYN-ACK packet sent\n\n";
     }else{
         tcpseg->setEceBit(false);
         tcpseg->setCwrBit(false);
-        EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet sent\n\n";
+        EV << "\n\nnon-ECN-setup SYN-ACK packet sent\n\n";
     }
     if(state->ecnWillingness && state->endPointIsWillingECN){
-        state->EcnEnabled = true;
-        EV << "\n\nmona:\n  both end-points are willing ECN... ECN enabled\n\n";
+        state->ect = true;
+        EV << "\n\nboth end-points are willing  to use ECN... ECN is enabled\n\n";
     }else{ //TODO: not sure if we have to.
-        // rfc 3168 page 16:
+        // rfc-3168, page 16:
         // A host that is not willing to use ECN on a TCP connection SHOULD
         // clear both the ECE and CWR flags in all non-ECN-setup SYN and/or
         // SYN-ACK packets that it sends to indicate this unwillingness.
-        state->EcnEnabled = false;
-        EV << "\n\nmona:\n  ECN disabled\n\n";
+        state->ect = false;
+        EV << "\n\nECN is disabled\n\n";
     }
     //mona
 
@@ -595,18 +606,18 @@ void TCPConnection::sendAck()
     tcpseg->setWindow(updateRcvWnd());
     //mona
     TCPStateVariables* state = getState();
-    if(state && state->EcnEnabled){  //TODO: check if not in initialize?
+    if(state && state->ect){  //TODO: check if not in initialize?
        if(state->gotCeIndication){
            state->ecnEchoState = true;
            state->gotCeIndication = false;
-           EV << "\n\nmona:\n   got CE... Entering ecnEcho state\n\n";
+           EV << "\n\nReceived CE... Entering ecnEcho state\n\n";
        }
        if (state->ecnEchoState == true){
            tcpseg->setEceBit(true);
-           EV_INFO << "\n\nmona:\nIn ecnEcho state... send ACK with EceBit set\n\n";
+           EV_INFO << "\n\nIn ecnEcho state... send ACK with ECE Bit set\n\n";
        }
     }
-    //mona
+    //mona-TODO: rfc page 20: pure ack packets must be sent with not-ECT codepoint
     // write header options
     writeHeaderOptions(tcpseg);
 
@@ -682,9 +693,9 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setWindow(updateRcvWnd());
 
     //mona
-    if(state->EcnEnabled && state->sndCwr){
+    if(state->ect && state->sndCwr){
         tcpseg->setCwrBit(true);
-        EV_INFO << "\n\nmona\n set CWR bit in header.\n\n";
+        EV_INFO << "\n\nset CWR bit\n\n";
         state->sndCwr = false;
     }
     //mona

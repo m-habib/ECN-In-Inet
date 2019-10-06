@@ -105,7 +105,7 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
     else {
         //mona
         //TODO: not sure if here is the correct location. what about dupacks > DUPTHRESH? do we need if else statement?
-        if (state->EcnEnabled && state->gotEce){
+        if (state->ect && state->gotEce){
             // halve cwnd and reduce ssthresh and do not increase cwnd (RFC 3168 page 18):
             // If the sender receives an ECN-Echo (ECE) ACK
             // packet (that is, an ACK packet with the ECN-Echo flag set in the TCP
@@ -124,19 +124,19 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
                 state->ssthresh = state->snd_cwnd / 2; //according to wikipedia TODO: check if ok.
                 state->snd_cwnd = std::max(state->snd_cwnd / 2, uint32(1));
                 state->sndCwr = true;
-                EV_INFO << "\n\nmona:\n  ssthresh = cwnd/2: received ECN-Echo ACK.\n";
-                EV_INFO << "  cwnd /= 2: received ECN-Echo ACK.\n\n";
+                EV_INFO << "\n\nssthresh = cwnd/2: received ECN-Echo ACK.\n";
+                EV_INFO << "cwnd /= 2: received ECN-Echo ACK.\n\n";
 
                 // RFC 3168 page 18:
                 // ... the sending TCP MUST reset the retransmit timer on receiving
                 // the ECN-Echo packet when the congestion window is one ...
                 if(state->snd_cwnd == 1){
                     restartRexmitTimer();   //TODO: not sure if this is the retransmit timer. check that.
-                    EV_INFO << "\n\nmona:\n  cwnd = 1... reset retransmit timer.\n\n";
+                    EV_INFO << "\n\ncwnd = 1... reset retransmit timer.\n\n";
                 }
                 state->eceReactionTime = simTime();
             }else{
-                EV_INFO << "\n\nmona:\n  multiple ECN-Echo ACKs in less than rtt... no reaction\n\n";
+                EV_INFO << "\n\nmultiple ECN-Echo ACKs in less than rtt... no reaction\n\n";
             }
             state->gotEce = false;
         }else{

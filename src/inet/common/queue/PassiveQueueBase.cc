@@ -51,12 +51,12 @@ void PassiveQueueBase::handleMessage(cMessage *msg)
         emit(enqueuePkSignal, msg);
         emit(dequeuePkSignal, msg);
         emit(queueingTimeSignal, SIMTIME_ZERO);
-        EV << "\n\n\n\n\n PassiveQueueBase: packet was not enqueued,\nFullPath: " << getFullPath() << "\n\n\n\n\n"; //mona
+//        EV << "\n\n\n\n\n PassiveQueueBase: packet was not enqueued,\nFullPath: " << getFullPath() << "\n\n\n\n\n"; //mona
         sendOut(msg);
     }
     else {
         msg->setArrivalTime(simTime());
-        EV << "\n\n\n\n\n PassiveQueueBase: PACKET ENQUEUED\n\n\n\n\n";
+//        EV << "\n\n\n\n\n PassiveQueueBase: PACKET ENQUEUED\n\n\n\n\n";   //mona
         cMessage *droppedMsg = enqueue(msg);
         if (msg != droppedMsg)
             emit(enqueuePkSignal, msg);

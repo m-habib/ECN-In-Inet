@@ -200,10 +200,10 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
     //TODO: mona: not sure if here or above/below
     static int ece_counter = 0; //TODO: temp variable for development purposes
     TCPStateVariables* state = getState();
-    if(state && state->EcnEnabled){
+    if(state && state->ect){
         if (tcpseg->getEceBit() == true){
             if(ece_counter++ <= 2)
-                EV_INFO << "\n\nmona:\n  got packet with ECE, ece_counter = " << ece_counter;
+                EV_INFO << "\n\ngot packet with ECE, ece_counter = " << ece_counter;
             if(ece_counter == 2){
                 ece_counter = 0;
                 EV_INFO << "\n, gotEce <- true";
@@ -850,7 +850,7 @@ TCPEventCode TCPConnection::processSegmentInListen(TCPSegment *tcpseg, L3Address
         //mona
         if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == true){
             state->endPointIsWillingECN = true;
-            EV << "\n\nmona:\n  ECN-setup SYN packet received\n\n";
+            EV << "\n\nECN-setup SYN packet received\n\n";
         }
         sendSynAck();
         startSynRexmitTimer();
@@ -1052,19 +1052,19 @@ TCPEventCode TCPConnection::processSegmentInSynSent(TCPSegment *tcpseg, L3Addres
             //mona
             if(state->ecnSynSent){
                 if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == false){
-                    state->EcnEnabled = true;
-                    EV << "\n\nmona:\n  ECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
+                    state->ect = true;
+                    EV << "\n\nECN-setup SYN-ACK packet was received... ECN is enabled.\n\n";
                 }else{
-                    state->EcnEnabled = false;
-                    EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                    state->ect = false;
+                    EV << "\n\nnon-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
                 }
                 state->ecnSynSent = false;
             }else{
-                state->EcnEnabled = false;
+                state->ect = false;
                 if(tcpseg->getEceBit() == true && tcpseg->getCwrBit() == false)
-                    EV << "\n\nmona:\n  ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                    EV << "\n\nECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
                 else
-                    EV << "\n\nmona:\n  non-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
+                    EV << "\n\nnon-ECN-setup SYN-ACK packet was received... ECN is disabled.\n\n";
             }
 
             //mona

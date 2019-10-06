@@ -269,7 +269,7 @@ class INET_API TCPStateVariables : public cObject
     bool sndCwr;               //set if ECE was handled
     bool gotEce;               //set if packet with ECE arrived
     bool gotCeIndication;      //set if CE was set in controlInfo from IP
-    bool EcnEnabled;           //set if ECN enabled for this connection
+    bool ect;           //set if this connection is ECN Capable (ECT stands for ECN-Capable transport - rfc3168)
     bool endPointIsWillingECN; //set if the other end-point is willing to use ECN
     bool ecnSynSent;           //set if ECN-setup SYN packet was sent
     bool ecnWillingness;       //set if current host is willing to use ECN
