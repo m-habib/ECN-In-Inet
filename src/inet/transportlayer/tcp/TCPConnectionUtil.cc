@@ -261,16 +261,22 @@ void TCPConnection::sendToIP(TCPSegment *tcpseg)
     controlInfo->setSourceAddress(localAddr);
     controlInfo->setDestinationAddress(remoteAddr);
 
+    //mona
     // We decided to use ECT(1) to indicate ECN capable transport.
-    // according to rfc-3168, page 6:
-    // "...  Routers treat the ECT(0) and ECT(1) codepoints
+    // rfc-3168, page 6:
+    // Routers treat the ECT(0) and ECT(1) codepoints
     // as equivalent.  Senders are free to use either the ECT(0) or the
-    // ECT(1) codepoint to indicate ECT ..."
-    if(state->ect)
+    // ECT(1) codepoint to indicate ECT.
+    //
+    // rfc-3168, page 20:
+    // For the current generation of TCP congestion control algorithms, pure
+    // acknowledgement packets (e.g., packets that do not contain any
+    // accompanying data) MUST be sent with the not-ECT codepoint.
+    if(state->ect && !state->sndAck)
         controlInfo->setExplicitCongestionNotification(1);
     else
         controlInfo->setExplicitCongestionNotification(0);
-
+    //mona
     tcpseg->setControlInfo(check_and_cast<cObject *>(controlInfo));
     tcpMain->send(tcpseg, "ipOut");
 }
@@ -622,7 +628,9 @@ void TCPConnection::sendAck()
     writeHeaderOptions(tcpseg);
 
     // send it
+    state->sndAck = true;   //mona
     sendToIP(tcpseg);
+    state->sndAck = false;  //mona
 
     // notify
     tcpAlgorithm->ackSent();

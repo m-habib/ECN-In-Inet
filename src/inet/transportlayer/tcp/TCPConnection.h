@@ -273,6 +273,7 @@ class INET_API TCPStateVariables : public cObject
     bool endPointIsWillingECN; //set if the other end-point is willing to use ECN
     bool ecnSynSent;           //set if ECN-setup SYN packet was sent
     bool ecnWillingness;       //set if current host is willing to use ECN
+    bool sndAck;               //set if sending Ack packet, used to set relevant info in controlInfo.
     simtime_t eceReactionTime; //records the time of the last ECE reaction
     //mona
 
