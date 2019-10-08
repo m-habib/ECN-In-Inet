@@ -428,6 +428,8 @@ void TCPConnection::selectInitialSeqNum()
 
 bool TCPConnection::isSegmentAcceptable(TCPSegment *tcpseg) const
 {
+
+    //mona-info
     // check that segment entirely falls in receive window
     // RFC 793, page 69:
     // "There are four cases for the acceptability test for an incoming segment:
@@ -617,7 +619,7 @@ void TCPConnection::sendAck()
     tcpseg->setWindow(updateRcvWnd());
     //mona
     TCPStateVariables* state = getState();
-    if(state && state->ect){  //TODO: check if not in initialize?
+    if(state && state->ect){
        if(state->gotCeIndication){
            state->ecnEchoState = true;
            state->gotCeIndication = false;
@@ -705,7 +707,7 @@ void TCPConnection::sendSegment(uint32 bytes)
     tcpseg->setAckBit(true);
     tcpseg->setWindow(updateRcvWnd());
 
-    //mona
+    //mona-cwr
     if(state->ect && state->sndCwr){
         tcpseg->setCwrBit(true);
         EV_INFO << "\n\nset CWR bit\n\n";

@@ -133,7 +133,7 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
     //
     // RFC 793: first check sequence number
     //
-
+    EV_INFO << "\n\n\n\n\n\n\*\n*\n*\n*\n\n\n\n\n\n\n";
     bool acceptable = true;
 
     if (tcpseg->getHeaderLength() > TCP_HEADER_OCTETS) {    // Header options present? TCP_HEADER_OCTETS = 20
@@ -196,23 +196,30 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
     }
 
 
-
-    //TODO: mona: not sure if here or above/below
-    static int ece_counter = 0; //TODO: temp variable for development purposes
-    TCPStateVariables* state = getState();
-    if(state && state->ect){
-        if (tcpseg->getEceBit() == true){
-            if(ece_counter++ <= 2)
-                EV_INFO << "\n\ngot packet with ECE, ece_counter = " << ece_counter;
-            if(ece_counter == 2){
-                ece_counter = 0;
-                EV_INFO << "\n, gotEce <- true";
-                state->gotEce = true;
-            }
-            EV_INFO << "\n\n";
-        }
+    //mona-cwr
+    if(tcpseg->getCwrBit() == true){
+        EV_INFO << "\n\nReceived CWR... Leaving ecnEcho State\n\n";
+        state->ecnEchoState = false;
     }
     //mona
+
+
+//    //TODO: mona: move to process ack
+//    static int ece_counter = 0; //TODO: temp variable for development purposes
+//    TCPStateVariables* state = getState();
+//    if(state && state->ect){
+//        if (tcpseg->getEceBit() == true){
+//            if(ece_counter++ <= 2)
+//                EV_INFO << "\n\ngot packet with ECE, ece_counter = " << ece_counter;
+//            if(ece_counter == 2){
+//                ece_counter = 0;
+//                EV_INFO << "\n, gotEce <- true";
+//                state->gotEce = true;
+//            }
+//            EV_INFO << "\n\n";
+//        }
+//    }
+//    //mona
 
 
 
@@ -1162,6 +1169,16 @@ bool TCPConnection::processAckInEstabEtc(TCPSegment *tcpseg)
 {
     EV_DETAIL << "Processing ACK in a data transfer state\n";
 
+    //mona
+    TCPStateVariables* state = getState();
+    if(state && state->ect){
+        if (tcpseg->getEceBit() == true){
+            EV_INFO << "\n\nReceived packet with ECE\n\n";
+            state->gotEce = true;
+        }
+    }
+    //mona
+
     //
     //"
     //  If SND.UNA < SEG.ACK =< SND.NXT then, set SND.UNA <- SEG.ACK.
@@ -1228,7 +1245,7 @@ bool TCPConnection::processAckInEstabEtc(TCPSegment *tcpseg)
         }
     }
     else if (seqLE(tcpseg->getAckNo(), state->snd_max)) {
-        // ack in window.   //TODO: mona-info: do not react to ECE (or CE?) out of window.
+        // ack in window.
         uint32 old_snd_una = state->snd_una;
         state->snd_una = tcpseg->getAckNo();
 
@@ -1386,7 +1403,6 @@ void TCPConnection::process_TIMEOUT_SYN_REXMIT(TCPEventCode& event)
             break;
 
         case TCP_S_SYN_RCVD:
-            //mona: TODO: ecn init?
             sendSynAck();
             break;
 

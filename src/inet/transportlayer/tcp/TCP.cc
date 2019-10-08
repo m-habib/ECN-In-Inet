@@ -166,15 +166,14 @@ void TCP::handleMessage(cMessage *msg)
             // process segment
             TCPConnection *conn = findConnForSegment(tcpseg, srcAddr, destAddr);
             if (conn) {
-                //mona TODO: move to processSegment1stThru8th() ?
+                //mona
                 TCPStateVariables* state = conn->getState();
                 if(state && state->ect){
-                    if(CE == 3)    //TODO: check only in receiver-side (if processing ACK packet)
+                    // this may be true only in receiver side, because according to rfc-3168, page 20:
+                    // pure acknowledgement packets (e.g., packets that do not contain
+                    // any accompanying data) MUST be sent with the not-ECT codepoint.
+                    if(CE == 3)
                         state->gotCeIndication = true;
-                    if(tcpseg->getCwrBit() == true){
-                        EV_INFO << "\n\nReceived CWR... Leaving ecnEcho State\n\n" << CE;
-                        state->ecnEchoState = false;
-                    }
                 }
                 //mona
 
