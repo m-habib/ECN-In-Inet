@@ -47,8 +47,8 @@ network FlatNet_mini
         }
         channel ethernetline_slow extends DatarateChannel
         {
-            delay = 100us;
-            datarate = 0.0001Mbps;
+            delay = 10us;
+            datarate = 0.1Mbps;
         }
     submodules:
         configurator: IPv4NetworkConfigurator {

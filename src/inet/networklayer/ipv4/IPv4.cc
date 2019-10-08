@@ -232,7 +232,7 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
             EV_INFO << "ECN-Capable Transport... set CE";
             datagram->setExplicitCongestionNotification(3); //set CE
         } else {
-            EV_INFO << "Not-ECN-Capable Transport";
+//            EV_INFO << "Not-ECN-Capable Transport";
         }
         EV_INFO << "\n\n";
     }

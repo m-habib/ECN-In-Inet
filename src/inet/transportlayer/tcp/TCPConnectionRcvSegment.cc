@@ -133,7 +133,6 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
     //
     // RFC 793: first check sequence number
     //
-    EV_INFO << "\n\n\n\n\n\n\*\n*\n*\n*\n\n\n\n\n\n\n";
     bool acceptable = true;
 
     if (tcpseg->getHeaderLength() > TCP_HEADER_OCTETS) {    // Header options present? TCP_HEADER_OCTETS = 20
