@@ -124,8 +124,8 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
                 state->ssthresh = state->snd_cwnd / 2; //according to wikipedia TODO: check if ok.
                 state->snd_cwnd = std::max(state->snd_cwnd / 2, uint32(1));
                 state->sndCwr = true;
-                EV_INFO << "\n\nssthresh = cwnd/2: received ECN-Echo ACK.\n";
-                EV_INFO << "cwnd /= 2: received ECN-Echo ACK.\n\n";
+                EV_INFO << "\n\nssthresh = cwnd/2: received ECN-Echo ACK... new ssthresh = " << state->ssthresh << "\n";
+                EV_INFO << "cwnd /= 2: received ECN-Echo ACK... new cwnd = " << state->snd_cwnd << "\n\n";
 
                 // RFC 3168 page 18:
                 // ... the sending TCP MUST reset the retransmit timer on receiving
@@ -138,6 +138,8 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
             }else{
                 EV_INFO << "\n\nmultiple ECN-Echo ACKs in less than rtt... no reaction\n\n";
             }
+            if (cwndVector)
+                cwndVector->record(state->snd_cwnd);
             state->gotEce = false;
         }else{
         //mona
