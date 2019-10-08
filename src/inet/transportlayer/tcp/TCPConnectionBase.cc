@@ -126,6 +126,8 @@ TCPStateVariables::TCPStateVariables()
     endPointIsWillingECN = false; //mona
     ecnSynSent = false;           //mona
     ecnWillingness = false;       //mona
+    sndAck = false;               //mona
+    rexmit = false;               //mona
     eceReactionTime = 0;          //mona
 }
 

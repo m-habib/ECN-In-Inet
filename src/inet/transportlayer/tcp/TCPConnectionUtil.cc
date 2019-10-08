@@ -263,6 +263,7 @@ void TCPConnection::sendToIP(TCPSegment *tcpseg)
 
     //mona
     // We decided to use ECT(1) to indicate ECN capable transport.
+    //
     // rfc-3168, page 6:
     // Routers treat the ECT(0) and ECT(1) codepoints
     // as equivalent.  Senders are free to use either the ECT(0) or the
@@ -272,7 +273,11 @@ void TCPConnection::sendToIP(TCPSegment *tcpseg)
     // For the current generation of TCP congestion control algorithms, pure
     // acknowledgement packets (e.g., packets that do not contain any
     // accompanying data) MUST be sent with the not-ECT codepoint.
-    if(state->ect && !state->sndAck)
+    //
+    // rfc-3168, page 20:
+    // ECN-capable TCP implementations MUST NOT set either ECT codepoint
+    // (ECT(0) or ECT(1)) in the IP header for retransmitted data packets
+    if(state->ect && !state->sndAck && !state->rexmit)
         controlInfo->setExplicitCongestionNotification(1);
     else
         controlInfo->setExplicitCongestionNotification(0);
@@ -886,6 +891,11 @@ bool TCPConnection::sendProbe()
 
 void TCPConnection::retransmitOneSegment(bool called_at_rto)
 {
+    // mona
+    // rfc-3168
+    // ECN-capable TCP implementations MUST NOT set either ECT codepoint
+    // (ECT(0) or ECT(1)) in the IP header for retransmitted data packets
+    state->rexmit = true;
     uint32 old_snd_nxt = state->snd_nxt;
 
     // retransmit one segment at snd_una, and set snd_nxt accordingly (if not called at RTO)
@@ -929,10 +939,17 @@ void TCPConnection::retransmitOneSegment(bool called_at_rto)
             state->highRxt = rexmitQueue->getHighestRexmittedSeqNum();
         }
     }
+    state->rexmit = false; //mona
 }
 
 void TCPConnection::retransmitData()
 {
+    // mona
+    // rfc-3168
+    // ECN-capable TCP implementations MUST NOT set either ECT codepoint
+    // (ECT(0) or ECT(1)) in the IP header for retransmitted data packets
+    state->rexmit = true;
+
     // retransmit everything from snd_una
     state->snd_nxt = state->snd_una;
 
@@ -967,6 +984,8 @@ void TCPConnection::retransmitData()
         bytesToSend -= state->sentBytes;
     }
     tcpAlgorithm->segmentRetransmitted(state->snd_una, state->snd_nxt);
+
+    state->rexmit = false; //mona
 }
 
 void TCPConnection::readHeaderOptions(TCPSegment *tcpseg)

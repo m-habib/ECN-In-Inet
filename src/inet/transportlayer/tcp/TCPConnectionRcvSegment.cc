@@ -1228,7 +1228,7 @@ bool TCPConnection::processAckInEstabEtc(TCPSegment *tcpseg)
         }
     }
     else if (seqLE(tcpseg->getAckNo(), state->snd_max)) {
-        // ack in window.
+        // ack in window.   //TODO: mona-info: do not react to ECE (or CE?) out of window.
         uint32 old_snd_una = state->snd_una;
         state->snd_una = tcpseg->getAckNo();
 
