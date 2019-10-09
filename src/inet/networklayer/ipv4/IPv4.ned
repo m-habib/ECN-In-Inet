@@ -91,6 +91,8 @@ simple IPv4
         string arpModule;
         string icmpModule;
         double procDelay @unit("s") = default(0s);
+        double ecnAvgeragningInterval = default(0.0001);	//mona: ECN: queue length averaging interval size
+        double ecnQLengthThrsh = default(1);	//mona: ECN: queue length threshold to trigger CE indication
         int timeToLive = default(32);
         int multicastTimeToLive = default(32);
         double fragmentTimeout @unit("s") = default(60s);

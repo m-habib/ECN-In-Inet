@@ -70,14 +70,14 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     //mona
     DropTailQueue* pppOutQueue = nullptr;
     pppOutQueueLengthVector pppQueueLength; // saves PPP out-queue length history
-    double averagingIntervalSize = 0.0001;  // TODO: define a par in ini and assign it.
+    double averagingIntervalSize;  // TODO: define a par in ini and assign it.
     // According to Larry L. Peterson & Bruce S. Davie in "Computer Networks" section 6.4.1:
     //
     // Using a queue length of 1 as the trigger for setting the congestion
     // bit is a trade-off between significant queuing (and hence higher throughput)
     // and increased idle time (and hence lower delay). In other words, a queue
     // length of 1 seems to optimize the power function.
-    float qLengthThreshold = 1;   // queue length threshold for setting CE
+    double qLengthThreshold;   // queue length threshold for setting CE
     //mona
 
     IIPv4RoutingTable *rt = nullptr;
@@ -328,7 +328,7 @@ class INET_API IPv4 : public QueueBase, public INetfilter, public ILifecycle, pu
     virtual void start();
     virtual void flush();
 
-    float PppOuytQueueAverageLength();    //mona
+    double PppOuytQueueAverageLength();    //mona
 };
 
 } // namespace inet

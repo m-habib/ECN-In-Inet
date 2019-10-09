@@ -77,6 +77,11 @@ void IPv4::initialize(int stage)
         forceBroadcast = par("forceBroadcast");
         useProxyARP = par("useProxyARP");
 
+        //mona
+        averagingIntervalSize = par("ecnAvgeragningInterval");
+        qLengthThreshold = par("ecnQLengthThrsh");
+        //mona
+
         curFragmentId = 0;
         lastCheckTime = 0;
         fragbuf.init(icmp);
@@ -1245,7 +1250,7 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObje
         pppQueueLength.push_back(std::tuple<long, simtime_t>(l, simTime()));
 }
 
-float IPv4::PppOuytQueueAverageLength()
+double IPv4::PppOuytQueueAverageLength()
 {
     int vSize = pppQueueLength.size();
     if(vSize == 0)
@@ -1286,7 +1291,7 @@ float IPv4::PppOuytQueueAverageLength()
     }
     sum += currentSampleQueueLength * SIMTIME_DBL(avgIntervalEnd - currentSampleStart);
 //    float avgQueueLength = sum /  averagingIntervalSize;
-    float avgQueueLength = floorf((sum /  averagingIntervalSize) * 100) / 100;
+    double avgQueueLength = floorf((sum /  averagingIntervalSize) * 100) / 100;
     return avgQueueLength;
 }
 //mona
