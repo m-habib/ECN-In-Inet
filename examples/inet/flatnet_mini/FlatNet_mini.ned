@@ -42,18 +42,18 @@ network FlatNet_mini
         }
         channel ethernetline_fast extends DatarateChannel
         {
-            delay = 0.001us;
-            datarate = 1024Mbps;
+            delay = 0.1us;
+            datarate = 10Mbps;
         }
         channel ethernetline_slow extends DatarateChannel
         {
-            delay = 10us;
-            datarate = 0.1Mbps;
+            delay = 0.1us;
+            datarate = 5Mbps;
         }
     submodules:
         configurator: IPv4NetworkConfigurator {
             parameters:
-
+ 
                 config = xml("<config> \
                 				<interface hosts='cli1' address='192.168.0.37' netmask='255.255.x.x'/> \
                                 <interface hosts='*' address='192.168.x.x' netmask='255.255.x.x'/> \

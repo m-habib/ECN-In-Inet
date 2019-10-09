@@ -225,16 +225,16 @@ void IPv4::handleIncomingDatagram(IPv4Datagram *datagram, const InterfaceEntry *
 //        EV_INFO << "\n\nReceived packet with CE set\n\n";
     double averageLength = PppOuytQueueAverageLength();
     if (averageLength > qLengthThreshold) {
-        EV_INFO << "\n\nAverage queue length is " << averageLength << "\n";
         //if ECN-Capable Transport (ECT)
         if (datagram->getExplicitCongestionNotification() == 1
                 || datagram->getExplicitCongestionNotification() == 2) {
-            EV_INFO << "ECN-Capable Transport... set CE";
+            EV_INFO << "\n\nECN-Capable Transport... set CE ";
+            EV_INFO << "(Average queue length is " << averageLength << ")\n\n";
             datagram->setExplicitCongestionNotification(3); //set CE
         } else {
 //            EV_INFO << "Not-ECN-Capable Transport";
         }
-        EV_INFO << "\n\n";
+//        EV_INFO << "\n\n";
     }
     //mona
 
@@ -1245,7 +1245,7 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObje
         pppQueueLength.push_back(std::tuple<long, simtime_t>(l, simTime()));
 }
 
-double IPv4::PppOuytQueueAverageLength()
+float IPv4::PppOuytQueueAverageLength()
 {
     int vSize = pppQueueLength.size();
     if(vSize == 0)
@@ -1285,7 +1285,8 @@ double IPv4::PppOuytQueueAverageLength()
         currentSampleQueueLength = std::get<0>(pppQueueLength[i]);
     }
     sum += currentSampleQueueLength * SIMTIME_DBL(avgIntervalEnd - currentSampleStart);
-    double avgQueueLength = sum /  averagingIntervalSize;
+//    float avgQueueLength = sum /  averagingIntervalSize;
+    float avgQueueLength = floorf((sum /  averagingIntervalSize) * 100) / 100;
     return avgQueueLength;
 }
 //mona
