@@ -25,6 +25,8 @@ import inet.networklayer.configurator.ipv4.IPv4NetworkConfigurator;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
 import ned.DatarateChannel;
+import inet.visualizer.integrated.IntegratedVisualizer;
+
 
 
 network FlatNet_mini
@@ -75,6 +77,11 @@ network FlatNet_mini
             parameters:
                 @display("i=device/server_s");
         }
+        
+        visualizer: IntegratedVisualizer {
+            @display("p=267,37");
+        }
+        
     connections:
         cli1.pppg++ <--> ethernetline_fast <--> rte[0].pppg++;
         rte[0].pppg++ <--> ethernetline_slow <--> rte[1].pppg++;
