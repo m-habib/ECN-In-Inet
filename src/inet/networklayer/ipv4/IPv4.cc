@@ -98,11 +98,54 @@ void IPv4::initialize(int stage)
         arpModule->subscribe(IARP::failedARPResolutionSignal, this);
 
         //mona
-        pppOutQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");   //TODO: better to set path as par in ned file (according to stackoverflow)
-        if(pppOutQueue){
-            cModule *pppQueueModule = check_and_cast<cModule *>(pppOutQueue);
+        int i;
+        while(true){
+            std::string qPath = std::string("^.^.ppp[") + std::to_string(i) + std::string("].queue");
+            DropTailQueue* q = (DropTailQueue*)getModuleByPath(qPath.c_str());
+            if(!q)
+                break;
+            cModule *pppQueueModule = check_and_cast<cModule *>(q);
+            EV_INFO << "found " << getModuleByPath(qPath.c_str())->getFullPath() << "\npointer is: " << pppQueueModule << "\n";
             pppQueueModule->subscribe(DropTailQueue::queueLengthSignal, this);
+            i++;
         }
+
+//        std::vector<const char *> mygates = getModuleByPath("^.^")->getGateNames();
+//        EV_INFO << "iterating over router's gates: \n";
+//        for (GateIterator i(getModuleByPath("^.^")); !i.end(); i++) {
+//            cGate *g = *i;
+//            if (!g)
+//                continue;
+//
+//            // find the host/router's gates that internally connect to this interface
+//            if (g->getType() == cGate::OUTPUT)
+//                EV_INFO << "gate \"" << g->getName() << "\" is an output gate\n";
+//            if (g->getType() == cGate::INPUT)
+//                EV_INFO << "gate \"" << g->getName() << "\" is an input gate\n";
+//        }
+//        EV_INFO << "\n\n";
+//
+//        EV_INFO << "gate(ppp$o, 0) = " << getModuleByPath("^.^")->gate("pppg$o", 0)->getFullPath() << "\n";
+//        EV_INFO << "getModuleByPath(^.^.ppp[1].queue) = " << getModuleByPath("^.^.ppp[1].queue");
+////        getModuleByPath("^.^")->gate("pppg$o")->getPathEndGate();
+//
+//        EV_INFO << "gate count: " << getModuleByPath("^.^")->gateCount() << "\n";
+//        EV_INFO << "gate size of pppg: " << getModuleByPath("^.^")->gateSize("pppg") << "\n";
+//        EV_INFO << "gate type of pppg: " << getModuleByPath("^.^")->gateType("pppg") << "\n";
+//        EV_INFO << "gate type of ethg: " << getModuleByPath("^.^")->gateType("ethg") << "\n";
+//        EV_INFO << "all gates form IP:\n";
+//        for(auto g : mygates)
+//            EV_INFO << "gate: " << g << "\n";
+//        EV_INFO << "\n\n\n\n";
+
+        pppOutQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");   //TODO: better to set path as par in ned file (according to stackoverflow)
+
+
+
+//        if(pppOutQueue){
+//            cModule *pppQueueModule = check_and_cast<cModule *>(pppOutQueue);
+//            pppQueueModule->subscribe(DropTailQueue::queueLengthSignal, this);
+//        }
         //mona
 
         WATCH(numMulticast);
@@ -502,6 +545,14 @@ void IPv4::routeUnicastPacket(IPv4Datagram *datagram, const InterfaceEntry *from
         const IPv4Route *re = rt->findBestMatchingRoute(destAddr);
         if (re) {
             destIE = re->getInterface();
+            EV_INFO << "\n\n\n\ndestIE full path: " << destIE->getFullPath() << "\n";
+            EV_INFO << "\n\n\n\ndestIE full name: " << destIE->getFullName() << "\n";
+            EV_INFO << "\n\n\n\ndestIE owner: " << destIE->getOwner() << "\n";
+            EV_INFO << "\n\n\n\ndestIE interface module: " << destIE->getInterfaceModule() << "\n";
+            EV_INFO << "\n\n\n\ndestIE node ougate id: " << destIE->getNodeOutputGateId() << "\n";
+            EV_INFO << "\n\n\n\ndestIE network layer gate id: " << destIE->getNetworkLayerGateIndex() << "\n";
+            EV_INFO << "\n\n\n\nre gateWay: " << re->getGateway() << "\n";
+            EV_INFO << "\n\n\n\nre full path: " << re->getFullPath() << "\n";
             nextHopAddr = re->getGateway();
         }
     }
@@ -1246,8 +1297,10 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj,
 //mona
 void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObject *details)
 {
-    if (signalID == DropTailQueue::queueLengthSignal)
+    if (signalID == DropTailQueue::queueLengthSignal){
+        EV_INFO << "\n\n\n\n\nreceived signal from pointer " << source << " which dereferences to " << *source << "\n\n\n\n";
         pppQueueLength.push_back(std::tuple<long, simtime_t>(l, simTime()));
+    }
 }
 
 double IPv4::PppOuytQueueAverageLength()
