@@ -138,7 +138,7 @@ void IPv4::initialize(int stage)
 //            EV_INFO << "gate: " << g << "\n";
 //        EV_INFO << "\n\n\n\n";
 
-        pppOutQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");   //TODO: better to set path as par in ned file (according to stackoverflow)
+//        pppOutQueue = (DropTailQueue*)getModuleByPath("^.^.ppp[1].queue");   //TODO: better to set path as par in ned file (according to stackoverflow)
 
 
 
@@ -548,15 +548,6 @@ void IPv4::routeUnicastPacket(IPv4Datagram *datagram, const InterfaceEntry *from
         const IPv4Route *re = rt->findBestMatchingRoute(destAddr);
         if (re) {
             destIE = re->getInterface();
-            EV_INFO << "\n\n\n\ndestIE full path: " << destIE->getFullPath() << "\n";
-//            EV_INFO << "\n\n\n\ndestIE full name: " << destIE->getFullName() << "\n";
-//            EV_INFO << "\n\n\n\ndestIE owner: " << destIE->getOwner() << "\n";
-//            EV_INFO << "\n\n\n\ndestIE interface module: " << destIE->getInterfaceModule() << "\n";
-//            EV_INFO << "\n\n\n\ndestIE node ougate id: " << destIE->getNodeOutputGateId() << "\n";
-//            EV_INFO << "\n\n\n\ndestIE network layer gate id: " << destIE->getNetworkLayerGateIndex() << "\n";
-//            EV_INFO << "\n\n\n\nre gateWay: " << re->getGateway() << "\n";
-//            EV_INFO << "\n\n\n\nre full path: " << re->getFullPath() << "\n";
-
             //mona
             // rfc-3168, page 6-7:
             // The ECN-Capable Transport (ECT) codepoints '10' and '01' are set by the
@@ -578,9 +569,19 @@ void IPv4::routeUnicastPacket(IPv4Datagram *datagram, const InterfaceEntry *from
             //
             // Figure 1: The ECN Field in IP.
 
-        //    if (datagram->getExplicitCongestionNotification() == 3) //if CE
-        //        EV_INFO << "\n\nReceived packet with CE set\n\n";
-            double averageLength = PppOutQueueAverageLength(destIE->getFullPath() + ".queue");
+            //    if (datagram->getExplicitCongestionNotification() == 3) //if CE
+            //        EV_INFO << "\n\nReceived packet with CE set\n\n";
+
+
+            // IeFullPath is of this structure: NetworkName.rte[*].ppp*
+            // while the actual path should be of the following structure: NetworkName.rte[*].ppp[*]
+            // so we convert distIeFullPath to the appropriate structure (add [ ] around ppp's index)
+            std::string distIeFullPath = destIE->getFullPath();
+            std::string pppIndex = distIeFullPath.substr(distIeFullPath.length()-1);
+            std::string distIeFixedFullPath = distIeFullPath.substr(0, distIeFullPath.length()-1) + "[" + pppIndex + "]";
+            // We intend to access the ppp queue, so we add ".queue" to the path
+            std::string pppQueueFullPath = distIeFixedFullPath + ".queue";
+            double averageLength = PppOutQueueAverageLength(pppQueueFullPath);
             if (averageLength > qLengthThreshold) {
                 //if ECN-Capable Transport (ECT)
                 if (datagram->getExplicitCongestionNotification() == 1
@@ -589,13 +590,11 @@ void IPv4::routeUnicastPacket(IPv4Datagram *datagram, const InterfaceEntry *from
                     EV_INFO << "(Average queue length is " << averageLength << ")\n\n";
                     datagram->setExplicitCongestionNotification(3); //set CE
                 } else {
-        //            EV_INFO << "Not-ECN-Capable Transport";
+                    //EV_INFO << "Not-ECN-Capable Transport";
                 }
-        //        EV_INFO << "\n\n";
+                EV_INFO << "\n\n";
             }
             //mona
-
-
             nextHopAddr = re->getGateway();
         }
     }
@@ -1342,9 +1341,8 @@ void IPv4::receiveSignal(cComponent *source, simsignal_t signalID, long l, cObje
 {
     if (signalID == DropTailQueue::queueLengthSignal){
         std::string qFullPath = source->getFullPath();
-        EV_INFO <<  "\n\n\nreceived signal: length: " << l << " from path: " << qFullPath << "\n\n\n";
         if(qsLengthMap.find(qFullPath) == qsLengthMap.end())
-            qsLengthMap[qFullPath] = new pppOutQueueLengthVector(); //TODO: delete
+            qsLengthMap[qFullPath] = new pppOutQueueLengthVector(); //TODO: delete allocated mem
         qsLengthMap[qFullPath]->push_back(std::tuple<long, simtime_t>(l, simTime()));
     }
 }
