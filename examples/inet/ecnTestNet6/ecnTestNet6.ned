@@ -48,7 +48,7 @@ network EcnTestNet6
 
     submodules:
         configurator: IPv4NetworkConfigurator;
-        rte[10]: Router {
+        rte[5]: Router {
             parameters:
                 @display("is=vs");
         }
@@ -60,7 +60,7 @@ network EcnTestNet6
             parameters:
                 @display("is=vs");
         }
-        cli[10]: StandardHost {
+        cli[5]: StandardHost {
             parameters:
                 @display("i=device/laptop_s");
         }
@@ -73,10 +73,10 @@ network EcnTestNet6
         }
 
     connections:
-		for i=0..10-1{
+		for i=0..5-1{
 			cli[i].pppg++ <--> ethernetline <--> rte[i].pppg++;
         	rte[i].pppg++ <--> ethernetline <--> bottleneck_rte.pppg++;
 		}
 		bottleneck_rte.pppg++ <--> ethernetline <--> rte_afterBottle.pppg++;
-		rte_afterBottle.pppg++ <--> gigabitline2 <--> srv.pppg++;
+		rte_afterBottle.pppg++ <--> ethernetline <--> srv.pppg++;
 }
