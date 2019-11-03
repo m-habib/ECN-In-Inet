@@ -151,6 +151,7 @@ void TCPReno::receivedDataAck(uint32 firstSeqAcked)
                 EV_INFO << "\n\nmultiple ECN-Echo ACKs in less than rtt... no ECN reaction\n\n";
             state->gotEce = false;
         }
+        EV_INFO << "\n\n\n\n\n\n\n\nsrtt: " << state->srtt << "\n\n\n\n\n\n\n";
         if(performSsCa){
             // If ECN is not enabled or if ECN is enabled and received multiple ECE-Acks in
             // less than RTT, then perform slow start and congestion avoidance.
