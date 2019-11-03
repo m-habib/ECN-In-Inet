@@ -31,7 +31,6 @@ import inet.node.ethernet.Eth100M;
 import inet.node.ethernet.Eth10M;
 
 
-
 network EcnTestNet6
 {
     types:
@@ -40,7 +39,7 @@ network EcnTestNet6
             delay = 0.1us;
             datarate = 100Mbps;
         }
-        channel gigabitline2 extends DatarateChannel
+        channel gigabitline extends DatarateChannel
         {
             delay = 0.1us;
             datarate = 1Gbps;
@@ -48,35 +47,58 @@ network EcnTestNet6
 
     submodules:
         configurator: IPv4NetworkConfigurator;
-        rte[5]: Router {
-            parameters:
-                @display("is=vs");
-        }
-        rte_afterBottle: Router {
-            parameters:
-                @display("is=vs");
-        }
-        bottleneck_rte: Router {
-            parameters:
-                @display("is=vs");
-        }
-        cli[5]: StandardHost {
+        cli_NSSL[6]: StandardHost {
             parameters:
                 @display("i=device/laptop_s");
         }
+
+        cli_TCE[8]: StandardHost;
+
+        cli_VLSI[16]: StandardHost {
+            parameters:
+                @display("i=device/laptop_s");
+        }
+
+        rte_VLSI[2]: Router {
+            parameters:
+                @display("is=vs");
+        }
+
+        rte_faculty[5]: Router {
+            parameters:
+                @display("is=vs");
+        }
+
         srv: StandardHost {
             parameters:
                 @display("i=device/server_s;p=397,103");
         }
+
         visualizer: IntegratedVisualizer {
             @display("p=267,37");
         }
 
     connections:
-		for i=0..5-1{
-			cli[i].pppg++ <--> ethernetline <--> rte[i].pppg++;
-        	rte[i].pppg++ <--> ethernetline <--> bottleneck_rte.pppg++;
-		}
-		bottleneck_rte.pppg++ <--> ethernetline <--> rte_afterBottle.pppg++;
-		rte_afterBottle.pppg++ <--> ethernetline <--> srv.pppg++;
+        for i=0..sizeof(cli_NSSL)-1 {
+            cli_NSSL[i].pppg++ <--> ethernetline <--> rte_faculty[0].pppg++;
+        }
+        for i=0..sizeof(cli_TCE)-1 {
+            cli_TCE[i].pppg++ <--> ethernetline <--> rte_faculty[1].pppg++;
+        }
+        for i=0..7 {
+            cli_VLSI[i].pppg++ <--> ethernetline <--> rte_VLSI[0].pppg++;
+        }
+        for i=8..15 {
+            cli_VLSI[i].pppg++ <--> ethernetline <--> rte_VLSI[1].pppg++;
+        }
+
+        rte_VLSI[0].pppg++ <--> Eth100M <--> rte_faculty[2].pppg++;
+        rte_VLSI[1].pppg++ <--> Eth100M <--> rte_faculty[2].pppg++;
+        rte_faculty[0].pppg++ <--> Eth100M <--> rte_faculty[3].pppg++;
+        rte_faculty[1].pppg++ <--> Eth100M <--> rte_faculty[3].pppg++;
+        rte_faculty[3].pppg++ <--> Eth100M <--> rte_faculty[4].pppg++;
+        rte_faculty[2].pppg++ <--> Eth100M <--> rte_faculty[4].pppg++;
+        rte_faculty[4].pppg++ <--> Eth100M <--> srv.pppg++;
+
+
 }
