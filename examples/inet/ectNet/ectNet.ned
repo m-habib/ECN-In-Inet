@@ -49,7 +49,7 @@ network EctNet
         configurator: IPv4NetworkConfigurator {
             @display("p=25,61");
         }
-        cli_NSSL[15]: StandardHost {
+        cli_NSSL[4]: StandardHost {
             parameters:
                 @display("i=device/laptop_s");
         }
