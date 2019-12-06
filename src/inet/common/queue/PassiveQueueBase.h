@@ -45,6 +45,8 @@ class INET_API PassiveQueueBase : public cSimpleModule, public IPassiveQueue
     int numQueueDropped;
 
   public:
+    cOutVector *dropsVecotr;    // will record changes to snd_cwnd
+
     /** Signal with packet when received it */
     static simsignal_t rcvdPkSignal;
     /** Signal with packet when enqueued it */

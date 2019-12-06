@@ -32,7 +32,7 @@ void PassiveQueueBase::initialize()
     // state
     packetRequested = 0;
     WATCH(packetRequested);
-
+    dropsVecotr = new cOutVector("drops");
     // statistics
     numQueueReceived = 0;
     numQueueDropped = 0;
@@ -64,10 +64,13 @@ void PassiveQueueBase::handleMessage(cMessage *msg)
         if (droppedMsg) {
             numQueueDropped++;
             emit(dropPkByQueueSignal, droppedMsg);
+            dropsVecotr->record(numQueueDropped);
             delete droppedMsg;
         }
-        else
+        else{
+            dropsVecotr->record(numQueueDropped);
             notifyListeners();
+        }
     }
 }
 
