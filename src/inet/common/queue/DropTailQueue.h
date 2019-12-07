@@ -41,7 +41,7 @@ class INET_API DropTailQueue : public PassiveQueueBase
     //mona
   public:
     static simsignal_t queueLengthSignal;
-
+    cOutVector *qLengthVecotr;    // will record changes to queue length
   protected:
     virtual void initialize() override;
 

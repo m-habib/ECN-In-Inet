@@ -38,23 +38,20 @@ void DropTailQueue::initialize()
 
     // configuration
     frameCapacity = par("frameCapacity");
+    qLengthVecotr = new cOutVector("queueLengthVec");
+    qLengthVecotr->record(queue.getLength());
 }
 
 cMessage *DropTailQueue::enqueue(cMessage *msg)
 {
     if (frameCapacity && queue.getLength() >= frameCapacity) {
         EV << "Queue full, dropping packet.\n";
+        qLengthVecotr->record(queue.getLength());
         return msg;
     }
     else {
-        //mona
-        //msg->setControlInfo(p)
-//        if(queue.getLength() > 4){
-//            EV << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMONA: queue.getlength > 4 \n";
-//            EV << "Full path is: " << getFullPath() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-//        }
-        //mona
         queue.insert(msg);
+        qLengthVecotr->record(queue.getLength());
         emit(queueLengthSignal, queue.getLength());
         return nullptr;
     }
@@ -62,14 +59,15 @@ cMessage *DropTailQueue::enqueue(cMessage *msg)
 
 cMessage *DropTailQueue::dequeue()
 {
-    if (queue.isEmpty())
+    if (queue.isEmpty()){
+        qLengthVecotr->record(queue.getLength());
         return nullptr;
+    }
 
     cMessage *msg = (cMessage *)queue.pop();
-//    EV << "\n\n\n\nPacket Dequeued\n\n\n\n";  //mona
     // statistics
     emit(queueLengthSignal, queue.getLength());
-
+    qLengthVecotr->record(queue.getLength());
     return msg;
 }
 
