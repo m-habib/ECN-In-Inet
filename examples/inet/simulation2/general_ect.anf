@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scave:Analysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:scave="http://www.omnetpp.org/omnetpp/scave">
+  <inputs>
+    <inputs name="/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-*.vec"/>
+    <inputs name="/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-*.sca"/>
+  </inputs>
+  <datasets>
+    <datasets name="ds1">
+      <items xsi:type="scave:Add" filterPattern="file(/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-#0.vec) AND attr:configname(general) AND attr:runnumber(0) AND module(Simulation2.R2.ppp[0].queue) AND name(drops)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="file(/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-#0.vec) AND attr:configname(general) AND attr:runnumber(0) AND module(Simulation2.R2.ppp[0].queue) AND name(queueLengthVec)" type="VECTOR"/>
+      <items xsi:type="scave:LineChart" name="dropsANDqlen" lineNameFormat=""/>
+    </datasets>
+    <datasets name="ds2">
+      <items xsi:type="scave:Add" filterPattern="file(/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-#0.vec) AND attr:configname(general) AND attr:runnumber(0) AND module(Simulation2.Host1.tcp) AND name(numRTOs)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="file(/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-#0.vec) AND attr:configname(general) AND attr:runnumber(0) AND module(Simulation2.Host2.tcp) AND name(numRTOs)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="file(/inet-3.6.6-git/examples/inet/simulation2/results_ect/general-#0.vec) AND attr:configname(general) AND attr:runnumber(0) AND module(Simulation2.Host3.tcp) AND name(numRTOs)" type="VECTOR"/>
+      <items xsi:type="scave:LineChart" name="rtos" lineNameFormat=""/>
+    </datasets>
+  </datasets>
+  <chartSheets>
+    <chartSheets name="default" charts="//@datasets/@datasets.0/@items.2 //@datasets/@datasets.1/@items.3"/>
+  </chartSheets>
+</scave:Analysis>
