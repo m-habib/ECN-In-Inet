@@ -40,6 +40,10 @@ precompiled_*.h.*
 *.vci
 .buildlog*
 
+# except results for ectNet
+!examples/inet/ectNet/results_ect8/*
+!examples/inet/ectNet/results_notect8/*
+
 # ignore binary files
 out/
 *.so
@@ -70,3 +74,4 @@ backups
 *~
 xxx
 /tmp/
+/.computed/
