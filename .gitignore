@@ -41,8 +41,9 @@ precompiled_*.h.*
 .buildlog*
 
 # except results for ectNet
-!examples/inet/ectNet/results_ect8/*
-!examples/inet/ectNet/results_notect8/*
+#!examples/inet/ectNet/results_ect8/*
+#!examples/inet/ectNet/results_notect8/*
+!examples/inet/simulation5/results_*/*
 
 # ignore binary files
 out/
