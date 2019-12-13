@@ -235,6 +235,12 @@ TCPConnection::TCPConnection(TCP *_mod, int _appGateIndex, int _connId)
         tcpRcvQueueBytesVector = new cOutVector("tcpRcvQueueBytes");
         tcpRcvQueueDropsVector = new cOutVector("tcpRcvQueueDrops");
     }
+    endToEndDelayVector = new cOutVector("e2eDelayVector");
+    endToEndDelayAvgVector = new cOutVector("e2eDelayAvgVector");
+    sumDelays  = 0;    // sum delays
+    avgE2EDelay  = 0;    // sum delays
+    numPackets = 0;    // num packets
+
 }
 
 TCPConnection::~TCPConnection()

@@ -389,6 +389,12 @@ class INET_API TCPConnection : public cObject
     cOutVector *tcpRcvQueueBytesVector = nullptr;    // current amount of used bytes in tcp receive queue
     cOutVector *tcpRcvQueueDropsVector = nullptr;    // number of drops in tcp receive queue
 
+    cOutVector *endToEndDelayVector = nullptr;    // E2E delay vector
+    cOutVector *endToEndDelayAvgVector = nullptr;    // E2E delay avg vector
+    simtime_t sumDelays  = 0;    // sum delays
+    simtime_t avgE2EDelay  = 0;    // sum delays
+    int numPackets = 0;    // num packets
+
   protected:
     /** @name FSM transitions: analysing events and executing state transitions */
     //@{

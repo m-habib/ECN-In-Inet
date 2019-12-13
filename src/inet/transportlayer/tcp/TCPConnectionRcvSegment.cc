@@ -200,6 +200,13 @@ TCPEventCode TCPConnection::processSegment1stThru8th(TCPSegment *tcpseg)
         EV_INFO << "\n\nReceived CWR... Leaving ecnEcho State\n\n";
         state->ecnEchoState = false;
     }
+
+    simtime_t currDelay = simTime() - tcpseg->getCreationTime();
+    sumDelays += currDelay;
+    numPackets++;
+    simtime_t avg = sumDelays/numPackets;
+    endToEndDelayAvgVector->record(avg);
+    endToEndDelayVector->record(currDelay);
     //mona
 
 
